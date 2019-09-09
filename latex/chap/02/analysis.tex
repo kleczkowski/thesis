@@ -4,4 +4,137 @@
 
 \chapter{Analiza problemu}
 
+\section{Kodowanie arytmetyczne}
+
+Kodowanie arytmetyczne to~jedna z~technik kompresji bezstratnej
+opracowana pierwotnie przez J.~Rissanena i~G.~G.~Langdona w~1976 roku~\cite{Rissanen:AC};
+jej~efektywna implementacja została podana przez I.~Wittena w~1987 roku~\cite{Witten:AC},
+która spopularyzowała tę~technikę kompresji danych.
+
+Główną ideą algorytmu jest zakodowanie strumienia symboli \( (x_i)_{i = 1}^N \)
+ze~zbioru \( S = \{ s_1, s_2, \dotsc, s_n \} \) jako ułamek \( M \in [0, 1) \);
+nad~symbolami mamy ustalony rozkład prawdopodobieństwa \( \{ p_1, p_2, \dotsc, p_n \} \).
+
+Algorytm kodowania wygląda następująco.
+\begin{enumerate}
+  \item Zainicjalizuj \( I := [0, 1) \).
+  \item Pobierz symbol \( x = s_k \) z~wejścia dla~pewnego \( k = 1, 2, \dotsc, n \).
+  \item Podziel \( I \) na~rozłączne podprzedziały \( \{ I_\ell \}_{\ell = 0}^n \) takie, 
+    że~\( |I| \cdot p_\ell = |I_\ell| \) i~\( I = \bigcup_{\ell = 0}^n I_\ell \).
+  \item Podstaw \( I := I_k \). (Ninejszą operację nazywamy \emph{zwężaniem} przedziału).
+  \item Powtórz~pkt.~2. do~momentu, aż~skończą~się dane.
+\end{enumerate}
+
+Algorytm dekodowania znacznika \( M \in [0, 1) \) jest analogiczny:
+\begin{enumerate}
+  \item Zainicjalizuj \( I := [0, 1) \).
+  \item Podziel analogicznie \( I \) na~\( \{ I_\ell \}_{\ell = 0}^n \) 
+    jak~dla~algorytmu kodowania.
+  \item Niech \( k = \min \{ \ell : M \in I_\ell \} \).
+  \item Wypisz symbol \( s_k \).
+  \item Powtórz pkt.~2.
+\end{enumerate}
+
+Podany algorytm zmaga~się z~kilkoma problemami, które zostaną poruszone w~tej sekcji.
+
+\subsection{Oznaczenie końca strumienia}
+
+Pierwszym problemem dla~kodowania arytmetycznego jest brak warunku
+zatrzymania~się pętli dekodera. Dla~tego problemu Sayood~\cite{Sayood:IDC}
+podaje następujące rozwiązania:
+
+\begin{enumerate}
+  \item Do~znacznika \( M \) należy dodatkowo zakodować liczbę zakodowanych
+    symboli \( N \). Jest~to najbardziej intuicyjne rozwiązanie, które niestety niesie
+    kolejny problem w~sposobie zakodowania liczby~\( N \). Co~więcej, to~rozwiązanie
+    odbiera możliwość przetwarzania zakodowanych danych w~sposób strumieniowy ---
+    kodowanie danych wymagałoby uprzedniego zliczenia zakodowanych symboli,
+    zanim znacznik zostanie wysłany.
+  \item Do zbioru symboli należy dodać nowy symbol, który będzie oznaczał koniec 
+    wejścia (\textsc{eoi}, ang.~\emph{end~of~input}). To~rozwiązanie pozwala na~strumieniowe
+    przetwarzanie znacznika, stąd może~być wysyłany porcjami do~dekodera, ponadto
+    sprawdzenie, czy~strumień się~zakończył wymaga jedynie sprawdzenia, czy~został
+    odkodowany symbol~\textsc{eoi}.
+\end{enumerate}
+
+Z~powyższych propozycji w~pracy został wybrany pkt.~2. Dodając, to~podejście również
+pozwala na~dodanie symboli, które mogą sterować zachowaniem kodera (np.~kasowanie
+modelu statystycznego, koniec bloku, czy~inne kody związane z~technikami słownikowymi).
+
+\subsection{Kodowanie ze~skalowaniem}
+
+Drugim problemem jest sposób, w~jaki znacznik \( M \) będzie reprezentowany
+oraz wysyłany. Ten~problem jest ściśle związany z~doborem arytmetyki, która będzie
+stała za~realizacją przedziałów w~algorytmie.
+
+Naiwna implementacja za~pomocą liczb o~skończonej precyzji może nieść ze sobą
+problemy w~postaci błędów wynikających z~doboru skończonej arytmetyki, stąd
+można wybrać równie naiwne rozwiązanie, które korzysta z~liczb o~arbitralnej precyzji.
+To~podejście spotyka~się z~problemami natury pamięciowej --- otrzymujemy złożoność
+\( O (N) \), gdzie \( N \) to~długość wyjścia (stała zależna od~entropii danych) ---
+czy~też~złożoności czasowej, stąd należało porzucić liczby o~arbitralnej precyzji.
+
+Inną metodą, podawaną przez Sayooda~\cite{Sayood:IDC}, jest renormalizacja przedziału.
+Rozwiązanie zakłada użycie dowolnej arytmetyki o~skończonej precyzji, przez 
+co~zyskujemy na~szybkości. Co~więcej, można wybrać w~szczególności arytmetykę stałoprzecinkową zrealizowaną 
+na~liczbach całkowitych. 
+
+Po~zwężeniu przedziału, ów~przedział jest poddawany
+szeregowi przekształceń, które go poszerzają, emitując przy~tym kolejne bity
+rozwinięcia binarnego znacznika~\( M \), który budowany jest przyrostowo.
+To~rozwiązanie pozwala na~osiągnięcie algorytmu, który ma~własność strumieniowania
+--- to~znaczy, koder i~dekoder słuchają swoich stopniowych zmian i~reagują na~każdy
+przychodzący symbol, kolejno bit, danych ze~strumienia. 
+
+Dokładny opis i~implementacja tzw.~kodowania ze~skalowaniem znajduje~się 
+w~\cite{Sayood:IDC} oraz w~\cite{Witten:AC}.
+
+\subsection{Wariant adaptacyjny}
+
+Kodowanie arytmetyczne jest techniką kompresji, która jest oparta o~entropię danych,
+czyli średnią miarę informacji przypadającą na~symbol~\cite{Sayood:IDC}. 
+
+Problemem w~kodowaniu arytmetycznym jest dobór modelu statystycznego. 
+Im~mniej adekwatny jest model statystyczny, tym~efektywność kodowania
+spada w stosunku do~zakodowania go modelem znanym uprzednio. 
+
+Jeśli wejście jest nieznane, bądź nie~możemy przypuszczać co~do~tego, jaki
+będzie rozkład prawdopodobieństwa dla~symboli, modele statyczne
+mogą być podatne na takie dane, skutkując tym~nieefektywną kompresją.
+Z~drugiej strony, wygodnym podejściem jest nieanalizowanie wejścia uprzednio, ponieważ
+algorytm traci własności strumieniujące.
+
+Stąd, rozwiązaniem pośrednim jest model dynamiczny, który odzwierciedla 
+statystykę danych uprzednio zakodowanych. Model dynamiczny to~taki~model,
+który można modyfikować w~trakcie działania algorytmu, aktualizując~go
+o~nowe wystąpienia symboli. 
+
+Z~modelem dynamicznym wiąże~się również problem precyzji. Należy zadbać~o~to, 
+żeby częstotliwości kumulatywne były dostatecznie małe, aby
+nie~doprowadzić do~błędów niedomiaru arytmetyki. Stąd, w~wypadku
+przekroczenia pewnej liczby wszystkich odnotownaych symboli w~modelu,
+pomniejsza się częstotliwości o~dwa razy, tak~by odzwierciedlał 
+ten~sam~rozkład, tylko z~mniejszymi częstotliwościami. Tę~operację
+nazywamy \emph{skalowaniem modelu}, która jest opisana w~\cite{Witten:AC}.
+
+Modyfikacja algorytmu kodowania ze~skalowaniem polega na~aktualizacji
+modelu statystycznego po~operacji zwężania w~koderze jak~i~dekoderze.
+Dodaje się również procedury aktualizacji modelu i jego skalowania.
+Jego opis został umieszczony w~\cite{Sayood:IDC}.
+
+\subsection{Drzewo Fenwicka}
+
+Również, ważnym pytaniem pozostaje, jaką strukturę danych wybrać, która
+zapewniałaby nam szybkie zapytania o~kumulatywną częstotliwość oraz
+jej aktualizację. Jedną z~nich jest binarne drzewo indeksowane, 
+znane~też jako drzewo Fenwicka, od~nazwiska autora~\cite{Fenwick:FT}.
+Ta struktura gwarantuje w~czasie~\( O (\log n) \) zapytanie i~modyfikację
+częstotliwości występowania symboli, ponadto realizuje skalowanie w~\( O (n \log n) \).
+
+Próg skalowania ustala się według ograniczeń przybranej arytmetyki. 
+W~wypadku arytmetyki stałopozycyjnej o~formacie 15.16, należy skalować
+model co~16363 symboli~\cite{Fenwick:FT}.
+
+Jego implementacja i~opis znajduje~się w~\cite{Fenwick:FT}.
+
 \end{document}
