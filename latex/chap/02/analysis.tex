@@ -137,4 +137,119 @@ model co~16363 symboli~\cite{Fenwick:FT}.
 
 Jego implementacja i~opis znajduje~się w~\cite{Fenwick:FT}.
 
+\section{Realizacja mutowalnego stanu w językach funkcyjnych}
+
+Programowanie funkcyjne to~jeden z~deklaratywnych paradygmatów programowania,
+w~których pierwszorzędnym bytem jest funkcja, a~głównym pojęciem
+jest ewaluacja funkcji, niżeli wykonywanie konkretnych poleceń,
+jak~ma to~miejsce w~programowaniu imperatywnym.~\cite{Hudak:Conception}
+
+Funkcyjne języki programowania unikają mutowalnych zmiennych i~innych 
+struktur danych, bądź ograniczają ich~użycie.
+
+W~językach czysto funkcyjnych z~kolei kompletnie odrzucono
+jawne operacje na~mutowalnych strukturach danych, oferując narzędzia,
+które pozwalają je~osiągnąć w~sposób, który kontroluje i~segreguje
+efekty uboczne za~pomocą takich mechanizmów jak~system typów~\cite{Hudak:Conception}.
+Również zauważono, że pisanie kodu o~bardziej imperatywnej naturze jest
+trudniejsze przy użyciu czystego kodu.
+
+Jedną z~propozycji segregacji efektów ubocznych były monady~\cite{Wadler:MFP}.
+
+Monady pozwalały na strukturyzację programów napisanych funkcyjnie, co~więcej,
+dawały możliwość mimetyzacji efektów ubocznych takich jak~wyjątki,
+niedeterminizm, odczyt zmiennych globalnych ze~środowiska i~w~szczególności
+mutowalny stan.
+
+Monady, które pozwalają na~modelowanie mutowalnego stanu to~\texttt{State}~\cite{OSullivan:RWH}
+oraz \textt{ST}~\cite{Launchbury:LFST}, które zostaną omówione poniżej.
+
+\subsection{Monada \texttt{State}}
+
+\texttt{State} pozwala na~zarządzanie pewną strukturą typu~\texttt{s}, która
+może~być wczytywana z~kontekstu (operacja \texttt{get}) oraz wprowadzana do~niego z~powrotem
+(operacja \texttt{put})~\cite{OSullivan:RWH}.
+
+Każda zmiana stanu wiąże~się z~wczytaniem stanu, przetworzeniem~go i~zapisaniem z~powrotem.
+Modyfikacje odbywają~się nie~inaczej, niż~przez kopiowanie struktury, stąd użycie tej~monady
+w~scenariuszach wymagających dość częstej aktualizacji stanu będzie~się wiązać z~intensywniejszą
+pracą odśmiecacza pamięci, co~końcowo może odbić~się na~czasie wykonywania takiego algorytmu.
+Wobec tego należy rozważyć inne monady, które pozwoliłyby na~realizację mutowalnego stanu
+w~sposób, który nie~zmuszałby odśmiecacza pamięci do~intensywniejszej pracy.
+
+\subsection{Monada \texttt{ST}}
+
+Alternatywą dla~konwencjonalnej monady stanu jest monada~\texttt{ST} zaproponowana
+przez~\cite{Launchbury:LFST}. Monada~\texttt{ST} pozwala na~użycie mutowalnych
+referencji do~pamięci i~mutowalnych struktur danych w~sposób niezagrażający
+referencyjnej transparentności (ang.~\emph{referential transparency}).
+
+W~monadzie~\texttt{ST} referencje są~silnie związane z~kontekstem i~obliczaną wartością
+w~tej~monadzie --- opuszczenie tej~monady skutkuje bezpowrotnym porzuceniem referencji,
+ponadto te~referencje nie~mogą zostać wyjawione poza~kontekst monady. To ograniczenie
+jest zrealizowane techniką nazywaną~\emph{typem rzekomym} albo~\emph{typem fantomowym}
+(ang.~\emph{phantom type}). Jest to parametr typowy, który nie uczestniczy w żadnym 
+konstruktorze danych, jedynie w konstruktorze typu. Ogólna kwantyfikacja tego typu
+w funkcji pozwalającej opuścić kontekst monadyczny:
+\begin{minted}{haskell}
+runST :: (forall s. ST s a) -> a
+\end{minted}
+wymusza nieukonkretnianie parametru typowego. Ten parametr jest uwspólniony z~typami
+referencji, czy~struktur danych, które żyją w~tej monadzie (przykładowo \mintinline{haskell}{STRef s a}
+jest rzeczoną referencją, która zachowuje~się jak~mutowalna zmienna).
+Usiłowany wyciek referencji poza kontekst monady musiałby~się wiązać z~ukonkretnieniem parametru
+\texttt{s}, przez co~referencje mogą~żyć tylko w~omawianej monadzie.
+
+Najważniejszą zaletą tej~monady, jest wykorzystanie mutowalności wprost, stąd zostaje rozwiązany
+problem zaśmiecanej sterty przez kopię poprzednich, i~jednakowo zbędnych, stanów.
+Thomasson zaleca~\cite{Thomasson:HHPP} użycie monady~\texttt{ST} w wypadku, kiedy
+może~dać wymierne korzyści, zwłaszcza~gdy algorytm silnie wykorzystuje mutowalność.
+
+\subsection{Monada \texttt{IO}}
+
+Monada~\texttt{IO} jest szczególną wersją monady~\texttt{ST}. Zachodzi fakt~\cite{Snoyman:PH}:
+\begin{minted}{haskell}
+ST RealWorld a ~ IO a
+\end{minted}
+
+Ponadto, monada~\texttt{IO} pozwala na operacje wejścia-wyjścia, które są potrzebne nam
+do zrealizowania kodera jako programu. 
+
+\subsection{Transformatory monad}
+
+Monady, zgodnie z~dobrymi praktykami, implementują jeden rodzaj efektów ubocznych.
+Pisząc~kod, który realizuje specyficzny scenariusz, można spodziewać~się, że~będzie
+on~wymagać kilku efektów ubocznych jednocześnie. Przykładowo, pisząc kontrolera typów,
+potrzebne będzie tworzenie logów dot.~błędów typowania oraz dostępu do tabeli symboli.
+Stąd monada, w której zostanie umieszczony kod kontrolera, posiadałaby cechy monady~\texttt{Reader}
+oraz~\texttt{Writer}.
+
+Wygodnym i~powszechnym już~sposobem kompozycji monad, a~dokładniej ich~zagnieżdżania, 
+są~transformatory monad 
+zaproponowane przez~\cite{Jones:FPO}. Transformatory monad działają
+jako szczególne wersje monad zakładające zagnieżdżenie jednej w~drugą.
+
+Klasyczna monada stanu jest zdefiniowana jako:
+\begin{minted}{haskell}
+newtype State s a = State { runState :: s -> (s, a) }
+\end{minted}
+przy czym transformator monad prezentuje się jako:
+\begin{minted}{haskell}
+newtype StateT s m a = StateT { runStateT :: s -> m (s, a) }
+\end{minted}
+Co więcej:
+\begin{minted}{haskell}
+StateT s Identity ~ State s
+\end{minted}
+
+Dzięki mechanizmowi klas typów, można pisać kod monadyczny abstrahując od tego,
+w jakiej kolejności został skomponowany stos monad i w jaki sposób monada
+realizuje dane operacje charakterystyczne dla transformatorów. 
+Dokładniejszą lekturą na temat transformatorów jest~\cite{Grabmuller:MTSS}
+jak~i~\cite{Jones:FPO}. Ogólna technika abstrakcji monad od~implementacji
+znajduje~się również w~\cite{OSullivan:RWH}.
+
+W pracy zostanie wykorzystany transformator~\texttt{ReaderT}, by móc czytać 
+mutowalne referencje w monadzie~\texttt{IO}.
+
 \end{document}
