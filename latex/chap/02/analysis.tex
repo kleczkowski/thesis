@@ -341,7 +341,10 @@ Dość klasycznym przykładem tej~techniki jest użycie jej w~kontekście list.
 Lista jest kodowana za pomocą kodowania Churcha jako funkcja, która jest
 tożsama z~prawostronnym złożeniem tej listy (\texttt{foldr}), często jako 
 \mintinline{haskell}{unchurch :: (a -> b -> b) -> b -> b}.
-Definiuje~się również \mintinline{haskell}{build churchList = unchurch churchList (:) []}.
+Definiuje~się również:
+\begin{minted}{haskell}
+build churchList = unchurch churchList (:) []
+\end{minted}
 
 Podobnie, operacje na~listach takie~jak~\texttt{map}, czy~\texttt{filter} 
 są~zapisywane w~formie prawostronnych złożeń.
