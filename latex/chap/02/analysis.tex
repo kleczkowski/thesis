@@ -252,4 +252,146 @@ znajduje~się również w~\cite{OSullivan:RWH}.
 W pracy zostanie wykorzystany transformator~\texttt{ReaderT}, by móc czytać 
 mutowalne referencje w monadzie~\texttt{IO}.
 
+\section{Realizacja strumieniowego przetwarzania danych}
+
+Follansbee określa strumieniowanie danych jako ,,ciągły transfer danych
+z jednego komputera do drugiego w czasie rzeczywistym''~\cite{Fallensbee:HGSM}.
+
+Języki funkcyjne często oferują różne semantyki ewaluacji:
+\begin{itemize}
+  \item Gorliwa ewaluacja --- strategia, która wyznacza wartości argumentów
+    funkcji (również konstruktorów) przed jej wywołaniem;
+  \item Leniwa ewaluacja --- strategia, która wyznacza wartości argumentów
+    funkcji (również konstruktorów), kiedy są one \emph{potrzebne}.
+    Przez potrzebę rozumiemy intuicyjnie pierwsze użycie referencji
+    danego argumentu.
+\end{itemize}
+Dokładną semantykę leniwego wartościowania i różnice między nimi podaje~\cite{Hudak:Conception}.
+
+W~kontekście strumieniowania, czyli przetwarzania danych fragmentarycznie,
+kawałek po~kawałku, bez~znajomości treści w~przód, leniwe wartościowanie okazuje~się
+zaletą i~cennym narzędziem do~realizacji strumieniowania.
+
+\subsection{Leniwe wejście-wyjście}
+
+Jednakże użycie leniwego wartościowania w kontekście leniwego wejścia-wyjścia,
+mimo elegancji, okazuje~się mieć kilka technicznych przeszkód --- główną z~nich
+jest problem przeplatania ze~sobą leniwych akcji wejścia-wyjścia oraz ich~szeregowania;
+ten~problem dogłębnie opisuje~\cite{Thomasson:HHPP}. Unika~się stąd tego podejścia
+w~realnych zastosowaniach.
+
+\subsection{Leniwe monady stanu}
+
+Ponadto, monady, które przeprowadzają operację \emph{bind} w~sposób leniwy,
+w~szczególności leniwy~\texttt{State} i~\texttt{ST} są powolne ze~względu
+na intensywne korzystanie z mechanizmu, który implementuje leniwe wartościowanie,
+które nazywa się thunkiem.
+
+Thunk jest podprogramem, który pozwala nam na skonstruowanie danej wartości,
+jeśli nie była uprzednio konstruowana, oraz jej przechowywanie, by nie
+liczyć wartości na~nowo (jest to~jedna z~ważnych cech, którą odróżnia \emph{call-by-need}
+od~\emph{call-by-name}). Ich kumulowanie ze~sobą może prowadzić do~dość długiego,
+i~przez to~kosztownego, stosu wywołań. 
+
+Podobne problemy mogą dziać się po stronie leniwych monad. Każdy \emph{bind}
+wprowadza stałą liczbę thunków do wartościowania, przez co czas każdego \emph{binda}
+wydłuża się o~ewaluację danego thunka, co~może prowadzić do~wolniejszego działania.
+
+\subsection{Współprogramy}
+
+Pozostaje więc pytanie, w~jaki sposób zrealizować strumieniowanie danych
+w~monadach, które pozwalają na~gorliwe obliczenia.
+
+Jedną z~propozycji jest wykorzystanie współprograów.
+
+Współprogramy (nazywane błędnie \emph{korutynami} jako kalka językowa)
+to~specjalny rodzaj podprogramów, które mają możliwość wstrzymania obliczeń
+i~wznowienia~ich w~dowolnym momencie. Dzięki temu współprogramy można ze~sobą
+przeplatać.
+
+W Haskellu przykładowa implementacja monadycznych korutyn jest opisana 
+przez~\cite{Blazevic:CP}.
+
+Szczególną impleementacją przedstawionego mechanizmu są potoki~\cite{Blazevic:CP},
+które~\cite{Thomasson:HHPP} wymienia jako jedno z mechanizmów, które mogą realizować
+strumieniowanie danych.
+
+Potoki to~transformatory monad (w~ogólności monadyczne korutyny to~transformatory monad)
+realizujące głównie dwa~rodzaje wstrzymania obliczeń:
+\begin{itemize}
+  \item \texttt{await} --- wstrzymuje obliczenia, by otrzymać wartość ze środowiska;
+  \item \texttt{yield} --- wstrzymuje obliczenia, by zwrócić wartość do środowiska.
+\end{itemize}
+Ponadto potoki można ze sobą łączyć~\cite{Blazevic:CP}, tak~jak to~wygląda 
+w~powłokach tekstowych (np. bash, PowerShell, czy~cmd). To~daje możliwość
+modularyzacji kodu na~krótkie i~proste fragmenty kodu, które po~połączeniu dają
+nam w~pełni dojrzały algorytm, który~ma własność strumieniowania.
+
+Biblioteką, która udostępnia nam potoki, jest biblioteka \texttt{pipes}~\cite{Hackage:Pipes}.
+
+Wartym zaznaczenia faktem jest~to, że~ta~biblioteka zapewnia optymalizacje,
+tzw.~\emph{short-cut fusion}. 
+
+Jest to~technika, która unika alokacji obiektów pośrednich poprzez rozmaite
+przekształcenia algebraiczne i~prawa, które są~użyte w~trakcie kompilacji,
+jako seria reguł przepisywania drzewa syntaktycznego. Jest to~szczególna
+technika tzw.~oddrzewiania kodu~\cite{Gill:SCD}.
+
+Dość klasycznym przykładem tej~techniki jest użycie jej w~kontekście list.
+Lista jest kodowana za pomocą kodowania Churcha jako funkcja, która jest
+tożsama z~prawostronnym złożeniem tej listy (\texttt{foldr}), często jako 
+\mintinline{haskell}{unchurch :: (a -> b -> b) -> b -> b}.
+Definiuje~się również \mintinline{haskell}{build churchList = unchurch churchList (:) []}.
+
+Podobnie, operacje na~listach takie~jak~\texttt{map}, czy~\texttt{filter} 
+są~zapisywane w~formie prawostronnych złożeń.
+
+\begin{minted}{haskell}
+map f = foldr (\hd tl -> (f hd) : tl) []
+filter p = foldr (\hd tl -> if p hd then hd : tl else tl) []
+\end{minted}
+
+Następnie, takie definicje są~wpisywane w~miejscu wywołań i~wykonywana jest reguła:
+\begin{minted}{haskell}
+  foldr op z (build churchList) = unchurch churchList op z
+\end{minted}
+dzięki czemu zamiast budować pośredniej listy, budujemy wynik
+w~oparciu o~\texttt{op} oraz \texttt{z}.
+
+Co~więcej, przy serii przepisywaniu definicji funkcji, docelowa funkcja wyliczająca
+wartość na~podstawie tak~zwiniętego wyrażenia może ograniczać~się do~rekursywnej funkcji,
+która generuje wynik wprost. Więcej na~ten temat można przeczytać w~\cite{Gill:SCD}.
+
+Podobne optymalizacje odbywają się w bibliotece~\texttt{pipes}, z tym~że one opierają się
+bardziej na algebraicznych własnościach potoków. O~nich więcej mówi autor biblioteki
+na~swoim~blogu~\cite{Gonzalez:SFP}.
+
+\section{Kodowanie, a~inne języki programowania}
+
+W~tej~sekcji zostaną opisane problemy, które wystąpiły w~trakcie implementacji
+kodowania w~innych językach funkcyjnych niż~Haskell. 
+
+\subsection{Scala}
+
+Scala jest językiem wieloparadygmatowym, opracowanym przez Martina Oderskiego~\cite{Odersky:BHS}.
+Scala w~przeważającej części jest językiem funkcyjnym, która implementuję gorliwą strategię
+ewaluacji.
+
+By~zastosować powyższe propozycje rozwiązań, Scala musiałaby~być językiem czysto funkcyjnym.
+Oczywiście, jest~to możliwe, jednakże pisanie monadycznego kodu w~sposób rozszerzalny
+wymaga użycia dodatkowych bibliotek, które są~słabo udokumentowane, bądź są~wybrakowane.
+Ponadto, implementacja korutyn w~Scali może~być kłopotliwa ze~względu na~ograniczenia
+na~stosie, co~generuje kolejny problem w~implementacji. Oczywistym sposobem byłoby
+sporządzenie minimalnej wersji tej~biblioteki, jednakże wybiegałoby~to poza tematykę pracy.
+
+Kompromisem od~pisania kodu w~czysto funkcyjny sposób byłoby napisanie~go, używając
+mniej czystego kodu, przez~co również mijałoby~się to z~podjętym problemem w~pracy.
+
+Realną przeszkodą w~implementacji wersji ,,kompromisowej'' było zachowanie mutowalnych
+domknięć w~Scali. Środowisko zmiennych domknięcia okazało się być~kopiowane za~każdym razem, kiedy
+domknięcie zostało użyte. Dzieję~się~tak, ponieważ sam JVM nie~akceptuje modyfikowalnych
+domknięć, które~są \emph{de facto} instancjami klas wewnętrznych, bądź są anonimowe~\cite{Oracle:IC}; co~więcej, 
+zmienne muszą być~\emph{skutecznie niemutowalne}, czyli takie, które są~jawnie 
+niemutowalne, bądź wynika~to ze~statycznej analizy kodu, stąd projekt został porzucony.
+
 \end{document}
