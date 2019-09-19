@@ -7,6 +7,16 @@ license:  MIT
 
 dependencies:
 - base == 4.* && < 5.0
+- bytestring
+- pipes
+- pipes-bytestring
+- pipes-group
+- fixed
+- mtl
+- lens
+- transformers
+- primitive
+- vector
 
 ghc-options:
 - -Wall
@@ -23,6 +33,7 @@ executables:
     main:         Main.hs
     dependencies:
     - ac-haskell
+    - optparse-applicative
 
 tests:
   ac-haskell-spec:
@@ -33,6 +44,7 @@ tests:
     - hspec
     - QuickCheck
     - random
+    - bytestring-arbitrary
 
 benchmarks:
   ac-haskell-bench:
