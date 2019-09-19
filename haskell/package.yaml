@@ -54,3 +54,4 @@ benchmarks:
     - ac-haskell
     - criterion
     - mwc-random
+    - random-bytestring
