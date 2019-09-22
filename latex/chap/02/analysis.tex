@@ -369,6 +369,73 @@ Podobne optymalizacje odbywają się w bibliotece~\texttt{pipes}, z tym~że one 
 bardziej na algebraicznych własnościach potoków. O~nich więcej mówi autor biblioteki
 na~swoim~blogu~\cite{Gonzalez:SFP}.
 
+\section{Problem grupowania elementów strumieni}
+
+Jednym z~problemów, który pojawia~się podczas implementacji jest grupowanie elementów
+wychodzących ze~strumieni. Ta funkcjonalność jest potrzebna, ponieważ:
+\begin{itemize}
+  \item istnieje potrzeba grupowania strumienia bitowego wychodzącego z~kodera
+    na~strumień bajtów, ponieważ dla~wejścia-wyjścia najmniejszą jednostką danych
+    jest bajt;
+  \item należy grupować strumienie bajtów na~tzw.~\emph{chunki}, fragmenty
+    danych o~ustalonej długości (na~przykład 4096 bajtów);
+\end{itemize}
+Również potrzebna jest implementacja operacji odwrotnych, ponieważ dekoder
+bazuje na~bitach, które wychodzą z~kodera i~stąd pochodzą z~zakodowanych plików.
+
+Rozwiązanie ma~zachowywać własność strumieniowania wraz ze~stałą ilością pamięci
+do~dyspozycji.
+
+\subsection{Wolne monady}
+
+Użytym rozwiązaniem są monady wolne. Monada wolna to~taka monada, która
+jest najmniejszą monadą w~sensie skomplikowania struktury danych i~spełnia 
+prawa monadyczne w~sposób trywialny (por. grupa wolna, bądź
+inna struktura wolna).
+
+Monady wolne są zapisywane jako poniższe struktury danych:
+\begin{minted}{haskell}
+data Free f a
+  = Roll (f (Free f a))
+  | Done a
+\end{minted}
+gdzie \texttt{f} jest nazywany funktorem zawieszenia.
+
+Monady wolne stanowią uogólnienie monadycznych korutyn. Ściślej mówiąc,
+transformator \mintinline{haskell}{Pipe i o m a} zachowuje izomorfizm:
+
+\begin{minted}{haskell}
+  Pipe i o m ~ Free (PipeF i o m)
+\end{minted}
+gdzie
+\begin{minted}{haskell}
+data PipeF i o m p
+  = Await (i -> p)
+  | Yield o p
+  | Action (m p)
+\end{minted}
+
+W użytym rozwiązaniu monada wolna stanowi strumieniowalną listę grupowalnych
+elementów. Biblioteka \emph{pipes-group} przetwarza tzw.~producentów
+(potoki, które potrafią jedynie wysyłać elementy) do monady wolnej,
+w~której funktorem zawieszenia jest producent. W~ten~sposób możemy 
+wykonywać monadę wolną (często mówi~się, że~dokonuje~się jej~interpretacji)
+otrzymując przy~tym producentów, którzy wysyłają konkretne grupy elementów.
+Przykładowo funkcja \mintinline{haskell}{Pipes.Group.chunksOf} zamienia producenta~na wolną monadę
+z~zawieszonymi producentami, którzy produkują co~najwyżej~\( n \) elementów
+wyjściowych.
+
+Również biblioteka \emph{pipes-group} pozwala na~zwijanie producentów
+pochodzących z~monady wolnej (np.~\texttt{Pipes.Group.folds}).
+
+Więcej informacji na~temat tej~biblioteki można znaleźć na~załączonym
+do~niej tutorialu~\cite{Hackage:Pipes-Groups-Tut}.
+
+Ponadto, interfejsem, który pozwala na grupowanie, czy łączenie podstrumieni,
+są soczewki. Ponieważ ich~użycie jest sporadyczne w~projekcie, nie~będą
+one~opisywane dokładniej w~rozważaniach. O soczewkach zbudowanych
+na~profunktorach można przeczytać w~\cite{Pickering_2017}.
+
 \section{Kodowanie, a~inne języki programowania}
 
 W~tej~sekcji zostaną opisane problemy, które wystąpiły w~trakcie implementacji
