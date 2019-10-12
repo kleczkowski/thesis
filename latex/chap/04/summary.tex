@@ -4,7 +4,36 @@
 
 \chapter{Podsumowanie}
 
+\section{Struktura testów obciążeniowych}
+
+Do testów zaimplementowanego kodera, jako próbkę referencyjną
+wykorzystano koder arytmetyczny autorstwa \emph{Project Nayuki}
+pod licencją MIT. Jego kod źródłowy jest dostępny pod linkiem
+\verb|https://github.com/nayuki/Reference-arithmetic-coding|.
+
+Testy składają się z serii pięciu wykonań nad różnymi przypadkami
+testowymi. Spośród wyników wykluczany jest najgorszy i najlepszy
+wynik, a z pozostałych trzech wyciągana jest średnia arytmetyczna.
+
+Sporządzono następujące przypadki:
+\begin{itemize}
+  \item \texttt{pan-tadeusz.txt} --- plik tekstowy zawierający
+    ,,Pana Tadeusza'' Adama Mickiewicza jako przypadek, w którym
+    testowany jest przypadek średni. Plik pochodzi z Wolnych Lektur,
+    jego tekst podlega domenie publicznej, a przypisy i inne
+    prace związane z tekstem są powiązane licencją CC-BY-SA 3.0;
+  \item \texttt{zeros.1m} --- jednomegabajtowy plik zawierający
+    wyłącznie zera, przypadek optymistyczny;
+  \item \texttt{random.1m} --- jednomegabajtowy plik zawierający 
+    losowe bajty danych pochodzące z \texttt{/dev/random}, który
+    reprezentuje kryptograficznie bezpieczny generator pseudolosowy
+    o rozkładzie bardzo zbliżonym do jednostajnego, przypadek
+    pesymistyczny.
+\end{itemize}
+
 \section{Wyniki testów obciążeniowych}
+
+
 
 \section{Wnioski}
 
