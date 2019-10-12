@@ -339,24 +339,26 @@ technika tzw.~oddrzewiania kodu~\cite{Gill:SCD}.
 
 Dość klasycznym przykładem tej~techniki jest użycie jej w~kontekście list.
 Lista jest kodowana za pomocą kodowania Churcha jako funkcja, która jest
-tożsama z~prawostronnym złożeniem tej listy (\texttt{foldr}), często jako 
-\mintinline{haskell}{unchurch :: (a -> b -> b) -> b -> b}.
+tożsama z~prawostronnym złożeniem tej listy (\texttt{foldr}), często jako typ
+\mintinline{haskell}{forall b.(a -> b -> b) -> b -> b}, gdzie \texttt{a}
+jest ustalone.
 Definiuje~się również:
 \begin{minted}{haskell}
-build churchList = unchurch churchList (:) []
+build :: (forall b. (a -> b -> b) -> b -> b) -> [a]
+build churchList =  churchList (:) []
 \end{minted}
 
 Podobnie, operacje na~listach takie~jak~\texttt{map}, czy~\texttt{filter} 
 są~zapisywane w~formie prawostronnych złożeń.
 
 \begin{minted}{haskell}
-map f = foldr (\hd tl -> (f hd) : tl) []
-filter p = foldr (\hd tl -> if p hd then hd : tl else tl) []
+map f xs = build (\cons nil -> foldr (\a b -> (f a) `cons` b) nil xs)
+filter p xs = build (\cons nil -> foldr (\a b -> if (p a) then a `cons` b else b) nil xs)
 \end{minted}
 
 Następnie, takie definicje są~wpisywane w~miejscu wywołań i~wykonywana jest reguła:
 \begin{minted}{haskell}
-  foldr op z (build churchList) = unchurch churchList op z
+foldr op z (build churchList) = unchurch churchList op z
 \end{minted}
 dzięki czemu zamiast budować pośredniej listy, budujemy wynik
 w~oparciu o~\texttt{op} oraz \texttt{z}.

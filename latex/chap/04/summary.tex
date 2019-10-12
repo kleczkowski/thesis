@@ -4,18 +4,23 @@
 
 \chapter{Podsumowanie}
 
-\section{Struktura testów obciążeniowych}
+\section{Struktura testów porównawczych}
 
-Do testów zaimplementowanego kodera, jako próbkę referencyjną
+Do testów porównawczych jako próbkę referencyjną
 wykorzystano koder arytmetyczny autorstwa \emph{Project Nayuki}
-pod licencją MIT. Jego kod źródłowy jest dostępny pod linkiem
-\verb|https://github.com/nayuki/Reference-arithmetic-coding|.
+pod licencją MIT. Jego kod źródłowy jest dostępny pod linkiem (dostęp
+12 października 2019):
+
+\begin{center}
+\verb|https://github.com/nayuki/Reference-arithmetic-coding|
+\end{center}
 
 Testy składają się z serii pięciu wykonań nad różnymi przypadkami
 testowymi. Spośród wyników wykluczany jest najgorszy i najlepszy
-wynik, a z pozostałych trzech wyciągana jest średnia arytmetyczna.
+wynik, a z pozostałych trzech wyciągana jest średnia arytmetyczna
+(jest to tzw. średnia ścięta).
 
-Sporządzono następujące przypadki:
+Wybrano następujące przypadki:
 \begin{itemize}
   \item \texttt{pan-tadeusz.txt} --- plik tekstowy zawierający
     ,,Pana Tadeusza'' Adama Mickiewicza jako przypadek, w którym
@@ -33,8 +38,106 @@ Sporządzono następujące przypadki:
 
 \section{Wyniki testów obciążeniowych}
 
+Zgodnie z~powyższą metodologią otrzymano wyniki opisane 
+w~tabeli~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
 
+\begin{table}[h]
+  \label{tab:encode-time}
+  \caption{Średnia obcięta czasu wykonywania operacji kodowania}
+  \centering
+  \begin{tabular}{| l | r | r |}
+    \hline
+    & C++ & Haskell \\ \hline
+    \texttt{pan-tadeusz.txt} & 1,448 s & 8,063 s\\ \hline
+    \texttt{zeros.1m} & 2,813 s & 8,380 s\\ \hline
+    \texttt{random.1m} & 3,369 s & 24,813 s\\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[h]
+  \label{tab:decode-time}
+  \caption{Średnia obcięta czasu wykonywania operacji dekodowania}
+  \centering
+  \begin{tabular}{| l | r | r |}
+    \hline
+    & C++ & Haskell \\ \hline
+    \texttt{pan-tadeusz.txt} & 1,646 s & 11,469 s \\ \hline
+    \texttt{zeros.1m} & 3,250 s & 14,656 s\\ \hline
+    \texttt{random.1m} & 3,964 s & 33,203 s\\ \hline
+  \end{tabular}
+\end{table}
+
+Należy zauważyć, że testowany koder napisany w Haskellu
+jest średnio osiem razy gorszy niż odpowiednia wersja w C++.
+Dekodowanie jest szczególnie wolniejsze oraz wrażliwsze 
+na rodzaj przekazywanych danych, co ma powiązanie z 
+średnim czasem dostępu do tablicy, która przechowuje
+sumy prefiksowe częstotliwości symboli. Średni czas
+dekodera napisanego w Haskellu jest od około sześciu 
+do jedenastu razy gorsze od próby referencyjnej.
 
 \section{Wnioski}
+
+Haskell, mimo eleganckiego i~deklaratywnego stylu programowania,
+nie nadaje się do implementacji algorytmów, w~których kluczowa
+jest mutowalność oraz czas działania, w~szczególności~są to~algorytmy
+kompresji, ale też inne algorytmy strumieniowe ze względu na powolność
+mechanizmów użytych do realizacji strumieniowania --- między innymi
+wolne monady, czy też czasochłonne dereferowanie obiektów pozostających
+jako mutowalne. 
+
+\section{Dalsze rozważania}
+
+Oczywiście, jest to powód do dalszych rozważań na temat przyspieszenia
+tego kodu, zachowując odpowiedni poziom ekspresji kodu, jaki został
+osiągnięty do tej pory. Stąd rozważa się dalsze ulepszenia tej pracy, 
+patrząc na słabe punkty
+tego kodera.
+
+\subsection{Implementacja projektu za pomocą FFI}
+
+Najbardziej trywialnym i pragmatycznym podejściem do problemu jest
+implementacja kodera i dekodera w języku C oraz eksportowanie funkcji
+odpowiedzialnych za kodowanie danych na zewnątrz, by móc je związać
+za pomocą tzw. \emph{Foreign Function Interface}, rozszerzenia kompilatora
+GHC, które pozwala na wywoływanie funkcji z języka C, które traktowane 
+są jako obce. Oczywiście można zyskać na szybkości rozwiązania,
+ponieważ w znaczący sposób omija się użycie odśmiecacza pamięci,
+i tym bardziej, nie używa się wewnętrznej pamięci środowiska
+czasu wykonywania.
+
+Wadą tego rozwiązania jest to, że mimo pragmatyzmu rozwiązanie nie korzysta
+z technik pochodzących w pełni z programowania funkcyjnego.
+Ponadto napisanie monadycznego kodu musiałoby się wiązać
+z napisaniem przodu obcego kodu, co sprawia, że projekt
+rośnie w zbędny kod (ang. \emph{boilerplate}).
+
+\subsection{Inspekcja funkcji operujących na modelu statystycznym}
+
+Podczas profilowania testów obciążeniowych dla projektu napisanego w Haskellu
+można zauważyć, że jednym z najbardziej drogim centrum kosztu jest
+funkcja~\texttt{query} pochodząca z modułu, który udostępnia
+drzewo Fenwicka (nazwane jako \texttt{FreqTree}). 
+
+Ten problem może się wiązać z następującymi powodami:
+\begin{itemize}
+  \item Funkcja \texttt{mapM} nie jest optymalizowana do rekursji ogonowej,
+    przez co \emph{de facto} nie jest kompilowana do pętli. Dzieje się tak,
+    ponieważ monada wprowadza dodatkowy kontekst, przez co optymalizacja
+    takiej funkcji, która wprowadza rekursję ogonową, nie jest przeprowadzana.
+  \item Konwersja między ciągami surowych bajtów a obiektami może zabierać
+    czas podczas odpytywania tablicy. Można użyć również wersji, w której
+    przechowuje się same referencje, jak w wypadku referencji
+    do pojedynczych obiektów. Oczywiście, taka wersja dodaje niepotrzebny
+    poziom pośredniości przez dodanie wskaźników, co może jeszcze bardziej
+    znacząco zaburzyć czas wykonywania. Mimo niezadowalających wyników,
+    rozsądnym wydaje się pozostawienie tablicy w bieżącej wersji,
+    która bezpośrednio interpretuje ciągi bajtów.
+\end{itemize}
+
+
+\subsection{Wariant biblioteki \texttt{pipes} w stylu CPS}
+
+
 
 \end{document}
