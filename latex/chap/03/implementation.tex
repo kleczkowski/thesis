@@ -1,0 +1,154 @@
+\documentclass[../../thesis.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Projekt kodera}
+
+\section{Struktura projektu}
+
+Projekt jest oparty o~system budowania \emph{Haskell Stack}.
+Opis folderów znajdujących się w~projekcie znajduje się w~tabeli~\ref{tab:directories}.
+Opis modułów wchodzących w~skład projektu są~w~tabeli~\ref{tab:modules}.
+Biblioteki i~motywacja ich~użycia są~podane w~tabeli~\ref{tab:libs}.
+W~dolnej podtabeli zostały podane biblioteki użyte do~testowania
+aplikacji.
+
+\begin{table}
+  \label{tab:directories}
+  \caption{Struktura katalogowa projektu \texttt{ac-haskell}}
+  \centering
+  \begin{tabular}{|l|p{8cm}|}
+    \hline
+    Nazwa & Opis \\ \hline
+    \texttt{app}                & Zawiera kod odpowiadający za~interfejs tekstowy kodera. \\ \hline
+    \texttt{bench}              & Zawiera kod testów obciążeniowych. \\ \hline
+    \texttt{test}               & Zawiera kod testów jednostkowych. \\ \hline
+    \texttt{src}                & Zawiera główny kod projektu. \\ \hline 
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \label{tab:modules}
+  \caption{Moduły projektu \texttt{ac-haskell}}
+  \centering
+  \begin{tabular}{|l|p{8cm}|}
+    \hline 
+    Nazwa & Opis \\ \hline
+    \texttt{Codec.AC.Internal}  & Zawiera wewnętrzny kod kodeka, który reeksportuje
+                                  moduły w~folderze~\texttt{Internal}. Dokładniejszy
+                                  ich~opis można znaleźć generując dokumentację.\\ \hline
+    \texttt{Codec.AC.Decoder}   & Zawiera implementację dekodera 
+                                  i~skojarzonych z~nim instancji klas typów. \\ \hline
+    \texttt{Codec.AC.Encoder}   & Jak wyżej, tylko~że koder. \\ \hline
+    \texttt{Codec.AC.FreqTree}  & Zawiera implementację drzewa Fenwicka w~oparciu 
+                                  o~mutowalne tablice. \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \label{tab:libs}
+  \caption{Użyte biblioteki w~projekcie \texttt{ac-haskell}}
+  \centering
+  \begin{tabular}{|l|p{8cm}|}
+    \hline
+    Nazwa & Opis \\ \hline
+    \texttt{base}               & Biblioteka standardowa Haskella. \\ \hline
+    \texttt{bytestring}         & Biblioteka służąca do~przetwarzania danych
+                                  binarnych w~wygodnej i~efektywnej formie
+                                  tablic opakowanych w~czysto funkcyjny interfejs. \\ \hline
+    \texttt{fixed}              & Wydajna implementacja arytmetyki stałoprzecinkowej o~formacie 15.16. \\ \hline
+    \texttt{pipes}              & Biblioteka gwarantująca potoki wraz z efektywną implementacją. \\ \hline
+    \texttt{pipes-bytestring}   & Biblioteka-córka łącząca funkcjonalności obydwu bibliotek. \\ \hline
+    \texttt{pipes-group}        & Biblioteka służąca do grupowania wyjścia potoków produkujących \\ \hline
+    \texttt{mtl}                & Implementacja ważniejszych monad w~Haskellu. \\ \hline
+    \texttt{optparse-applicative}&Biblioteka służąca do~parsowania argumentów podanych 
+                                  do~interfejsu tekstowego kodera. \\ \hline
+    \texttt{bytestring-arbitrary}&Biblioteka pozwalająca na~dostarczanie przykładów ciągów bajtów
+                                  dla narzędzia testującego~\textt{QuickCheck} \\ \hline
+    \texttt{transformers}       & Biblioteka dostarczająca transformatory monad. \\ \hline
+    \texttt{vector}             & Wydajna implementacja mutowalnych i~niemutowalnych tablic. \\ \hline
+    \hline
+    \texttt{criterion}          & Biblioteka służąca do~przeprowadzania testów obciążeniowych
+                                  i~generacji raportów. \\ \hline
+    \texttt{mwc-random}         & Generator pseudolosowy \emph{multiple and carry} służący 
+                                  do~generowania danych losowych o~dość dobrym rozkładzie
+                                  (dobrze oddający rozkład jednostajny). \\ \hline
+    \texttt{QuickCheck}         & Biblioteka służąca do sprawdzania własności pewnych funkcji i~obiektów,
+                                  która automatycznie generuje przypadki do~testowania, wraz z~podawaniem kontrprzykładów. \\ \hline
+    \texttt{random}             & Zwyczajny generator pseudolosowy, używany 
+                                  zazwyczaj w testach jednostkowych. \\ \hline
+    \texttt{random-bytestring}  & Biblioteka pozwalająca na~generowanie losowych ciągów bajtów
+                                  w~monadzie~\texttt{IO} na~potrzeby narzędzia~\texttt{criterion}. \\ \hline
+  \end{tabular}
+\end{table}
+
+\section{Konfiguracja projektu}
+
+\emph{Haskell Stack} używa narzędzia o~nazwie \emph{hpack}. 
+Jest to~generator plików narzędzia budowania~\emph{Cabal},
+który jest tyłem dla~\emph{Stacka}. Sporządzenie konfiguracji
+jest bardzo proste, a~sama~jej treść jest samoopisująca~się.
+
+% TODO: Wstawić tutaj listing z konfiguracją package.yaml
+
+Tak~sporządzony plik może posłużyć do~inicjalizacji projektu.
+Należy uruchomić polecenie \texttt{stack init} w~folderze,
+w~którym znajduje~się konfiguracja.
+
+\section{Dokumentacja projektu}
+
+Szczegółowa dokumentacja kodu jest generowana przez narzędzie \emph{haddock}.
+Aby wygenerować i~podejrzeć dokumentację projektu, należy uruchomić \texttt{stack haddock
+ac-haskell --open} w~folderze projektu. Po~zbudowaniu dokumentacji, pojawia~się
+okno z~modułami projektu. Pod~linkami znajdują~się poszczególne dokumentacje
+modułów wraz z~wyeksportowanymi symbolami. Do~każdego wyeksportowanego
+symbolu pojawia się jego typ, instancje oraz donośnik do~kodu źródłowego,
+gdzie można prześledzić implementację i~inne szczegóły.
+
+Dokumentacja jest sporządzona w~języku angielskim.
+
+\section{Instalacja programu}
+
+Aby zainstalować program, należy uruchomić \texttt{stack install} 
+w~folderze projektu. Wtedy binarka o~nazwie \texttt{ac-haskell}
+zostaje skopiowana do~folderu \texttt{\~/.local/bin} (dla~Linuxa)
+lub~\texttt{tutaj/sprawdz/windows} (dla~Windowsa).
+
+\section{Uruchomienie i~obsługa programu}
+
+O~ile wyżej wymienione foldery znajdują się w~zmiennej środowiskowej
+\texttt{PATH}, można wywołać program, by~podać wymaganą pomoc (w~języku angielskim),
+za~pomocą polecenia~\texttt{ac-haskell --help}.
+
+Aplikacja generuje odpowiednią pomoc dot.~poleceń. By~uzykać pomoc na~temat konkretnych
+poleceń, wystarczy wywołać \texttt{ac-haskell <polecenie>}.
+
+\section{Testy projektu}
+
+Projekt zawiera dwa~rodzaje testów: testy jednostkowe, sprawdzające
+czy~kod spełnia wymagania, oraz obciążeniowe, które sprawdzają
+efektywność rozwiązania.
+
+\subsection{Testy jednostkowe}
+
+By~uruchomić testy jednostkowe, należy wywołać~\texttt{stack test}
+w~folderze projektu. Narzędzie \emph{Stack} zbuduje projekt
+i~stowarzyszone z~nim testy. Ponadto zbuduje~kod
+odpowiedzialny za~sprawdzanie przykładów (wcześniej
+wymieniony~\texttt{doctest}). Testy zostaną automatycznie
+znalezione i~uruchomione. \texttt{hspec} 
+generuje raport z~przeprowadzonych testów jednostkowych.
+
+\subsection{Testy obciążeniowe}
+
+By~uruchomić testy obciążeniowe, należy uruchomić~\texttt{stack bench}
+w~folderze projektu. \emph{Stack} zbuduje projekt
+i~dodatkowy~kod, którego zadaniem jest zmierzenie
+kosztownych operacji kodowania i~dekodowania,
+w~różnych scenariuszach, o~których będzie mowa
+w~następnym rozdziale. Również zostaną uruchomione
+testy i~zostanie wygenerowany tekstowy raport. 
+By~otrzymać wersję HTML raportu, należy wywołać
+\texttt{stack bench --benchmark-arguments '--output-file raport.html'}.
+
+\end{document}

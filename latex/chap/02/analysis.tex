@@ -1,0 +1,469 @@
+\documentclass[../../thesis.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Analiza problemu}
+
+\section{Kodowanie arytmetyczne}
+
+Kodowanie arytmetyczne to~jedna z~technik kompresji bezstratnej
+opracowana pierwotnie przez J.~Rissanena i~G.~G.~Langdona w~1976 roku~\cite{Rissanen:AC};
+jej~efektywna implementacja została podana przez I.~Wittena w~1987 roku~\cite{Witten:AC},
+która spopularyzowała tę~technikę kompresji danych.
+
+Główną ideą algorytmu jest zakodowanie strumienia symboli \( (x_i)_{i = 1}^N \)
+ze~zbioru \( S = \{ s_1, s_2, \dotsc, s_n \} \) jako ułamek \( M \in [0, 1) \);
+nad~symbolami mamy ustalony rozkład prawdopodobieństwa \( \{ p_1, p_2, \dotsc, p_n \} \).
+
+Algorytm kodowania wygląda następująco.
+\begin{enumerate}
+  \item Zainicjalizuj \( I := [0, 1) \).
+  \item Pobierz symbol \( x = s_k \) z~wejścia dla~pewnego \( k = 1, 2, \dotsc, n \).
+  \item Podziel \( I \) na~rozłączne podprzedziały \( \{ I_\ell \}_{\ell = 0}^n \) takie, 
+    że~\( |I| \cdot p_\ell = |I_\ell| \) i~\( I = \bigcup_{\ell = 0}^n I_\ell \).
+  \item Podstaw \( I := I_k \). (Ninejszą operację nazywamy \emph{zwężaniem} przedziału).
+  \item Powtórz~pkt.~2. do~momentu, aż~skończą~się dane.
+\end{enumerate}
+
+Algorytm dekodowania znacznika \( M \in [0, 1) \) jest analogiczny:
+\begin{enumerate}
+  \item Zainicjalizuj \( I := [0, 1) \).
+  \item Podziel analogicznie \( I \) na~\( \{ I_\ell \}_{\ell = 0}^n \) 
+    jak~dla~algorytmu kodowania.
+  \item Niech \( k = \min \{ \ell : M \in I_\ell \} \).
+  \item Wypisz symbol \( s_k \).
+  \item Powtórz pkt.~2.
+\end{enumerate}
+
+Podany algorytm zmaga~się z~kilkoma problemami, które zostaną poruszone w~tej sekcji.
+
+\subsection{Oznaczenie końca strumienia}
+
+Pierwszym problemem dla~kodowania arytmetycznego jest brak warunku
+zatrzymania~się pętli dekodera. Dla~tego problemu Sayood~\cite{Sayood:IDC}
+podaje następujące rozwiązania:
+
+\begin{enumerate}
+  \item Do~znacznika \( M \) należy dodatkowo zakodować liczbę zakodowanych
+    symboli \( N \). Jest~to najbardziej intuicyjne rozwiązanie, które niestety niesie
+    kolejny problem w~sposobie zakodowania liczby~\( N \). Co~więcej, to~rozwiązanie
+    odbiera możliwość przetwarzania zakodowanych danych w~sposób strumieniowy ---
+    kodowanie danych wymagałoby uprzedniego zliczenia zakodowanych symboli,
+    zanim znacznik zostanie wysłany.
+  \item Do zbioru symboli należy dodać nowy symbol, który będzie oznaczał koniec 
+    wejścia (\textsc{eoi}, ang.~\emph{end~of~input}). To~rozwiązanie pozwala na~strumieniowe
+    przetwarzanie znacznika, stąd może~być wysyłany porcjami do~dekodera, ponadto
+    sprawdzenie, czy~strumień się~zakończył wymaga jedynie sprawdzenia, czy~został
+    odkodowany symbol~\textsc{eoi}.
+\end{enumerate}
+
+Z~powyższych propozycji w~pracy został wybrany pkt.~2. Dodając, to~podejście również
+pozwala na~dodanie symboli, które mogą sterować zachowaniem kodera (np.~kasowanie
+modelu statystycznego, koniec bloku, czy~inne kody związane z~technikami słownikowymi).
+
+\subsection{Kodowanie ze~skalowaniem}
+
+Drugim problemem jest sposób, w~jaki znacznik \( M \) będzie reprezentowany
+oraz wysyłany. Ten~problem jest ściśle związany z~doborem arytmetyki, która będzie
+stała za~realizacją przedziałów w~algorytmie.
+
+Naiwna implementacja za~pomocą liczb o~skończonej precyzji może nieść ze sobą
+problemy w~postaci błędów wynikających z~doboru skończonej arytmetyki, stąd
+można wybrać równie naiwne rozwiązanie, które korzysta z~liczb o~arbitralnej precyzji.
+To~podejście spotyka~się z~problemami natury pamięciowej --- otrzymujemy złożoność
+\( O (N) \), gdzie \( N \) to~długość wyjścia (stała zależna od~entropii danych) ---
+czy~też~złożoności czasowej, stąd należało porzucić liczby o~arbitralnej precyzji.
+
+Inną metodą, podawaną przez Sayooda~\cite{Sayood:IDC}, jest renormalizacja przedziału.
+Rozwiązanie zakłada użycie dowolnej arytmetyki o~skończonej precyzji, przez 
+co~zyskujemy na~szybkości. Co~więcej, można wybrać w~szczególności arytmetykę stałoprzecinkową zrealizowaną 
+na~liczbach całkowitych. 
+
+Po~zwężeniu przedziału, ów~przedział jest poddawany
+szeregowi przekształceń, które go poszerzają, emitując przy~tym kolejne bity
+rozwinięcia binarnego znacznika~\( M \), który budowany jest przyrostowo.
+To~rozwiązanie pozwala na~osiągnięcie algorytmu, który ma~własność strumieniowania
+--- to~znaczy, koder i~dekoder słuchają swoich stopniowych zmian i~reagują na~każdy
+przychodzący symbol, kolejno bit, danych ze~strumienia. 
+
+Dokładny opis i~implementacja tzw.~kodowania ze~skalowaniem znajduje~się 
+w~\cite{Sayood:IDC} oraz w~\cite{Witten:AC}.
+
+\subsection{Wariant adaptacyjny}
+
+Kodowanie arytmetyczne jest techniką kompresji, która jest oparta o~entropię danych,
+czyli średnią miarę informacji przypadającą na~symbol~\cite{Sayood:IDC}. 
+
+Problemem w~kodowaniu arytmetycznym jest dobór modelu statystycznego. 
+Im~mniej adekwatny jest model statystyczny, tym~efektywność kodowania
+spada w stosunku do~zakodowania go modelem znanym uprzednio. 
+
+Jeśli wejście jest nieznane, bądź nie~możemy przypuszczać co~do~tego, jaki
+będzie rozkład prawdopodobieństwa dla~symboli, modele statyczne
+mogą być podatne na takie dane, skutkując tym~nieefektywną kompresją.
+Z~drugiej strony, wygodnym podejściem jest nieanalizowanie wejścia uprzednio, ponieważ
+algorytm traci własności strumieniujące.
+
+Stąd, rozwiązaniem pośrednim jest model dynamiczny, który odzwierciedla 
+statystykę danych uprzednio zakodowanych. Model dynamiczny to~taki~model,
+który można modyfikować w~trakcie działania algorytmu, aktualizując~go
+o~nowe wystąpienia symboli. 
+
+Z~modelem dynamicznym wiąże~się również problem precyzji. Należy zadbać~o~to, 
+żeby częstotliwości kumulatywne były dostatecznie małe, aby
+nie~doprowadzić do~błędów niedomiaru arytmetyki. Stąd, w~wypadku
+przekroczenia pewnej liczby wszystkich odnotownaych symboli w~modelu,
+pomniejsza się częstotliwości o~dwa razy, tak~by odzwierciedlał 
+ten~sam~rozkład, tylko z~mniejszymi częstotliwościami. Tę~operację
+nazywamy \emph{skalowaniem modelu}, która jest opisana w~\cite{Witten:AC}.
+
+Modyfikacja algorytmu kodowania ze~skalowaniem polega na~aktualizacji
+modelu statystycznego po~operacji zwężania w~koderze jak~i~dekoderze.
+Dodaje się również procedury aktualizacji modelu i jego skalowania.
+Jego opis został umieszczony w~\cite{Sayood:IDC}.
+
+\subsection{Drzewo Fenwicka}
+
+Również, ważnym pytaniem pozostaje, jaką strukturę danych wybrać, która
+zapewniałaby nam szybkie zapytania o~kumulatywną częstotliwość oraz
+jej aktualizację. Jedną z~nich jest binarne drzewo indeksowane, 
+znane~też jako drzewo Fenwicka, od~nazwiska autora~\cite{Fenwick:FT}.
+Ta struktura gwarantuje w~czasie~\( O (\log n) \) zapytanie i~modyfikację
+częstotliwości występowania symboli, ponadto realizuje skalowanie w~\( O (n \log n) \).
+
+Próg skalowania ustala się według ograniczeń przybranej arytmetyki. 
+W~wypadku arytmetyki stałopozycyjnej o~formacie 15.16, należy skalować
+model co~16363 symboli~\cite{Fenwick:FT}.
+
+Jego implementacja i~opis znajduje~się w~\cite{Fenwick:FT}.
+
+\section{Realizacja mutowalnego stanu w językach funkcyjnych}
+
+Programowanie funkcyjne to~jeden z~deklaratywnych paradygmatów programowania,
+w~których pierwszorzędnym bytem jest funkcja, a~głównym pojęciem
+jest ewaluacja funkcji, niżeli wykonywanie konkretnych poleceń,
+jak~ma to~miejsce w~programowaniu imperatywnym.~\cite{Hudak:Conception}
+
+Funkcyjne języki programowania unikają mutowalnych zmiennych i~innych 
+struktur danych, bądź ograniczają ich~użycie.
+
+W~językach czysto funkcyjnych z~kolei kompletnie odrzucono
+jawne operacje na~mutowalnych strukturach danych, oferując narzędzia,
+które pozwalają je~osiągnąć w~sposób, który kontroluje i~segreguje
+efekty uboczne za~pomocą takich mechanizmów jak~system typów~\cite{Hudak:Conception}.
+Również zauważono, że pisanie kodu o~bardziej imperatywnej naturze jest
+trudniejsze przy użyciu czystego kodu.
+
+Jedną z~propozycji segregacji efektów ubocznych były monady~\cite{Wadler:MFP}.
+
+Monady pozwalały na strukturyzację programów napisanych funkcyjnie, co~więcej,
+dawały możliwość mimetyzacji efektów ubocznych takich jak~wyjątki,
+niedeterminizm, odczyt zmiennych globalnych ze~środowiska i~w~szczególności
+mutowalny stan.
+
+Monady, które pozwalają na~modelowanie mutowalnego stanu to~\texttt{State}~\cite{OSullivan:RWH}
+oraz \texttt{ST}~\cite{Launchbury:LFST}, które zostaną omówione poniżej.
+
+\subsection{Monada \texttt{State}}
+
+\texttt{State} pozwala na~zarządzanie pewną strukturą typu~\texttt{s}, która
+może~być wczytywana z~kontekstu (operacja \texttt{get}) oraz wprowadzana do~niego z~powrotem
+(operacja \texttt{put})~\cite{OSullivan:RWH}.
+
+Każda zmiana stanu wiąże~się z~wczytaniem stanu, przetworzeniem~go i~zapisaniem z~powrotem.
+Modyfikacje odbywają~się nie~inaczej, niż~przez kopiowanie struktury, stąd użycie tej~monady
+w~scenariuszach wymagających dość częstej aktualizacji stanu będzie~się wiązać z~intensywniejszą
+pracą odśmiecacza pamięci, co~końcowo może odbić~się na~czasie wykonywania takiego algorytmu.
+Wobec tego należy rozważyć inne monady, które pozwoliłyby na~realizację mutowalnego stanu
+w~sposób, który nie~zmuszałby odśmiecacza pamięci do~intensywniejszej pracy.
+
+\subsection{Monada \texttt{ST}}
+
+Alternatywą dla~konwencjonalnej monady stanu jest monada~\texttt{ST} zaproponowana
+przez~\cite{Launchbury:LFST}. Monada~\texttt{ST} pozwala na~użycie mutowalnych
+referencji do~pamięci i~mutowalnych struktur danych w~sposób niezagrażający
+referencyjnej transparentności (ang.~\emph{referential transparency}).
+
+W~monadzie~\texttt{ST} referencje są~silnie związane z~kontekstem i~obliczaną wartością
+w~tej~monadzie --- opuszczenie tej~monady skutkuje bezpowrotnym porzuceniem referencji,
+ponadto te~referencje nie~mogą zostać wyjawione poza~kontekst monady. To ograniczenie
+jest zrealizowane techniką nazywaną~\emph{typem rzekomym} albo~\emph{typem fantomowym}
+(ang.~\emph{phantom type}). Jest to parametr typowy, który nie uczestniczy w żadnym 
+konstruktorze danych, jedynie w konstruktorze typu. Ogólna kwantyfikacja tego typu
+w funkcji pozwalającej opuścić kontekst monadyczny:
+\begin{minted}{haskell}
+runST :: (forall s. ST s a) -> a
+\end{minted}
+wymusza nieukonkretnianie parametru typowego. Ten parametr jest uwspólniony z~typami
+referencji, czy~struktur danych, które żyją w~tej monadzie (przykładowo \mintinline{haskell}{STRef s a}
+jest rzeczoną referencją, która zachowuje~się jak~mutowalna zmienna).
+Usiłowany wyciek referencji poza kontekst monady musiałby~się wiązać z~ukonkretnieniem parametru
+\texttt{s}, przez co~referencje mogą~żyć tylko w~omawianej monadzie.
+
+Najważniejszą zaletą tej~monady, jest wykorzystanie mutowalności wprost, stąd zostaje rozwiązany
+problem zaśmiecanej sterty przez kopię poprzednich, i~jednakowo zbędnych, stanów.
+Thomasson zaleca~\cite{Thomasson:HHPP} użycie monady~\texttt{ST} w wypadku, kiedy
+może~dać wymierne korzyści, zwłaszcza~gdy algorytm silnie wykorzystuje mutowalność.
+
+\subsection{Monada \texttt{IO}}
+
+Monada~\texttt{IO} jest szczególną wersją monady~\texttt{ST}. Zachodzi fakt~\cite{Snoyman:PH}:
+\begin{minted}{haskell}
+ST RealWorld a ~ IO a
+\end{minted}
+
+Ponadto, monada~\texttt{IO} pozwala na operacje wejścia-wyjścia, które są potrzebne nam
+do zrealizowania kodera jako programu. 
+
+\subsection{Transformatory monad}
+
+Monady, zgodnie z~dobrymi praktykami, implementują jeden rodzaj efektów ubocznych.
+Pisząc~kod, który realizuje specyficzny scenariusz, można spodziewać~się, że~będzie
+on~wymagać kilku efektów ubocznych jednocześnie. Przykładowo, pisząc kontrolera typów,
+potrzebne będzie tworzenie logów dot.~błędów typowania oraz dostępu do tabeli symboli.
+Stąd monada, w której zostanie umieszczony kod kontrolera, posiadałaby cechy monady~\texttt{Reader}
+oraz~\texttt{Writer}.
+
+Wygodnym i~powszechnym już~sposobem kompozycji monad, a~dokładniej ich~zagnieżdżania, 
+są~transformatory monad 
+zaproponowane przez~\cite{Jones:FPO}. Transformatory monad działają
+jako szczególne wersje monad zakładające zagnieżdżenie jednej w~drugą.
+
+Klasyczna monada stanu jest zdefiniowana jako:
+\begin{minted}{haskell}
+newtype State s a = State { runState :: s -> (s, a) }
+\end{minted}
+przy czym transformator monad prezentuje się jako:
+\begin{minted}{haskell}
+newtype StateT s m a = StateT { runStateT :: s -> m (s, a) }
+\end{minted}
+Co więcej:
+\begin{minted}{haskell}
+StateT s Identity ~ State s
+\end{minted}
+
+Dzięki mechanizmowi klas typów, można pisać kod monadyczny abstrahując od tego,
+w jakiej kolejności został skomponowany stos monad i w jaki sposób monada
+realizuje dane operacje charakterystyczne dla transformatorów. 
+Dokładniejszą lekturą na temat transformatorów jest~\cite{Grabmuller:MTSS}
+jak~i~\cite{Jones:FPO}. Ogólna technika abstrakcji monad od~implementacji
+znajduje~się również w~\cite{OSullivan:RWH}.
+
+W pracy zostanie wykorzystany transformator~\texttt{ReaderT}, by móc czytać 
+mutowalne referencje w monadzie~\texttt{IO}.
+
+\section{Realizacja strumieniowego przetwarzania danych}
+
+Follansbee określa strumieniowanie danych jako ,,ciągły transfer danych
+z jednego komputera do drugiego w czasie rzeczywistym''~\cite{Fallensbee:HGSM}.
+
+Języki funkcyjne często oferują różne semantyki ewaluacji:
+\begin{itemize}
+  \item Gorliwa ewaluacja --- strategia, która wyznacza wartości argumentów
+    funkcji (również konstruktorów) przed jej wywołaniem;
+  \item Leniwa ewaluacja --- strategia, która wyznacza wartości argumentów
+    funkcji (również konstruktorów), kiedy są one \emph{potrzebne}.
+    Przez potrzebę rozumiemy intuicyjnie pierwsze użycie referencji
+    danego argumentu.
+\end{itemize}
+Dokładną semantykę leniwego wartościowania i różnice między nimi podaje~\cite{Hudak:Conception}.
+
+W~kontekście strumieniowania, czyli przetwarzania danych fragmentarycznie,
+kawałek po~kawałku, bez~znajomości treści w~przód, leniwe wartościowanie okazuje~się
+zaletą i~cennym narzędziem do~realizacji strumieniowania.
+
+\subsection{Leniwe wejście-wyjście}
+
+Jednakże użycie leniwego wartościowania w kontekście leniwego wejścia-wyjścia,
+mimo elegancji, okazuje~się mieć kilka technicznych przeszkód --- główną z~nich
+jest problem przeplatania ze~sobą leniwych akcji wejścia-wyjścia oraz ich~szeregowania;
+ten~problem dogłębnie opisuje~\cite{Thomasson:HHPP}. Unika~się stąd tego podejścia
+w~realnych zastosowaniach.
+
+\subsection{Leniwe monady stanu}
+
+Ponadto, monady, które przeprowadzają operację \emph{bind} w~sposób leniwy,
+w~szczególności leniwy~\texttt{State} i~\texttt{ST} są powolne ze~względu
+na intensywne korzystanie z mechanizmu, który implementuje leniwe wartościowanie,
+które nazywa się thunkiem.
+
+Thunk jest podprogramem, który pozwala nam na skonstruowanie danej wartości,
+jeśli nie była uprzednio konstruowana, oraz jej przechowywanie, by nie
+liczyć wartości na~nowo (jest to~jedna z~ważnych cech, którą odróżnia \emph{call-by-need}
+od~\emph{call-by-name}). Ich kumulowanie ze~sobą może prowadzić do~dość długiego,
+i~przez to~kosztownego, stosu wywołań. 
+
+Podobne problemy mogą dziać się po stronie leniwych monad. Każdy \emph{bind}
+wprowadza stałą liczbę thunków do wartościowania, przez co czas każdego \emph{binda}
+wydłuża się o~ewaluację danego thunka, co~może prowadzić do~wolniejszego działania.
+
+\subsection{Współprogramy}
+
+Pozostaje więc pytanie, w~jaki sposób zrealizować strumieniowanie danych
+w~monadach, które pozwalają na~gorliwe obliczenia.
+
+Jedną z~propozycji jest wykorzystanie współprograów.
+
+Współprogramy (nazywane błędnie \emph{korutynami} jako kalka językowa)
+to~specjalny rodzaj podprogramów, które mają możliwość wstrzymania obliczeń
+i~wznowienia~ich w~dowolnym momencie. Dzięki temu współprogramy można ze~sobą
+przeplatać.
+
+W Haskellu przykładowa implementacja monadycznych korutyn jest opisana 
+przez~\cite{Blazevic:CP}.
+
+Szczególną impleementacją przedstawionego mechanizmu są potoki~\cite{Blazevic:CP},
+które~\cite{Thomasson:HHPP} wymienia jako jedno z mechanizmów, które mogą realizować
+strumieniowanie danych.
+
+Potoki to~transformatory monad (w~ogólności monadyczne korutyny to~transformatory monad)
+realizujące głównie dwa~rodzaje wstrzymania obliczeń:
+\begin{itemize}
+  \item \texttt{await} --- wstrzymuje obliczenia, by otrzymać wartość ze środowiska;
+  \item \texttt{yield} --- wstrzymuje obliczenia, by zwrócić wartość do środowiska.
+\end{itemize}
+Ponadto potoki można ze sobą łączyć~\cite{Blazevic:CP}, tak~jak to~wygląda 
+w~powłokach tekstowych (np. bash, PowerShell, czy~cmd). To~daje możliwość
+modularyzacji kodu na~krótkie i~proste fragmenty kodu, które po~połączeniu dają
+nam w~pełni dojrzały algorytm, który~ma własność strumieniowania.
+
+Biblioteką, która udostępnia nam potoki, jest biblioteka \texttt{pipes}~\cite{Hackage:Pipes}.
+
+Wartym zaznaczenia faktem jest~to, że~ta~biblioteka zapewnia optymalizacje,
+tzw.~\emph{short-cut fusion}. 
+
+Jest to~technika, która unika alokacji obiektów pośrednich poprzez rozmaite
+przekształcenia algebraiczne i~prawa, które są~użyte w~trakcie kompilacji,
+jako seria reguł przepisywania drzewa syntaktycznego. Jest to~szczególna
+technika tzw.~oddrzewiania kodu~\cite{Gill:SCD}.
+
+Dość klasycznym przykładem tej~techniki jest użycie jej w~kontekście list.
+Lista jest kodowana za pomocą kodowania Churcha jako funkcja, która jest
+tożsama z~prawostronnym złożeniem tej listy (\texttt{foldr}), często jako typ
+\mintinline{haskell}{forall b.(a -> b -> b) -> b -> b}, gdzie \texttt{a}
+jest ustalone.
+Definiuje~się również:
+\begin{minted}{haskell}
+build :: (forall b. (a -> b -> b) -> b -> b) -> [a]
+build churchList =  churchList (:) []
+\end{minted}
+
+Podobnie, operacje na~listach takie~jak~\texttt{map}, czy~\texttt{filter} 
+są~zapisywane w~formie prawostronnych złożeń.
+
+\begin{minted}{haskell}
+map f xs = build (\cons nil -> foldr (\a b -> (f a) `cons` b) nil xs)
+filter p xs = build (\cons nil -> foldr (\a b -> if (p a) then a `cons` b else b) nil xs)
+\end{minted}
+
+Następnie, takie definicje są~wpisywane w~miejscu wywołań i~wykonywana jest reguła:
+\begin{minted}{haskell}
+foldr op z (build churchList) = unchurch churchList op z
+\end{minted}
+dzięki czemu zamiast budować pośredniej listy, budujemy wynik
+w~oparciu o~\texttt{op} oraz \texttt{z}.
+
+Co~więcej, przy serii przepisywaniu definicji funkcji, docelowa funkcja wyliczająca
+wartość na~podstawie tak~zwiniętego wyrażenia może ograniczać~się do~rekursywnej funkcji,
+która generuje wynik wprost. Więcej na~ten temat można przeczytać w~\cite{Gill:SCD}.
+
+Podobne optymalizacje odbywają się w bibliotece~\texttt{pipes}, z tym~że one opierają się
+bardziej na algebraicznych własnościach potoków. O~nich więcej mówi autor biblioteki
+na~swoim~blogu~\cite{Gonzalez:SFP}.
+
+\section{Problem grupowania elementów strumieni}
+
+Jednym z~problemów, który pojawia~się podczas implementacji jest grupowanie elementów
+wychodzących ze~strumieni. Ta funkcjonalność jest potrzebna, ponieważ:
+\begin{itemize}
+  \item istnieje potrzeba grupowania strumienia bitowego wychodzącego z~kodera
+    na~strumień bajtów, ponieważ dla~wejścia-wyjścia najmniejszą jednostką danych
+    jest bajt;
+  \item należy grupować strumienie bajtów na~tzw.~\emph{chunki}, fragmenty
+    danych o~ustalonej długości (na~przykład 4096 bajtów);
+\end{itemize}
+Również potrzebna jest implementacja operacji odwrotnych, ponieważ dekoder
+bazuje na~bitach, które wychodzą z~kodera i~stąd pochodzą z~zakodowanych plików.
+
+Rozwiązanie ma~zachowywać własność strumieniowania wraz ze~stałą ilością pamięci
+do~dyspozycji.
+
+\subsection{Wolne monady}
+
+Użytym rozwiązaniem są monady wolne. Monada wolna to~taka monada, która
+jest najmniejszą monadą w~sensie skomplikowania struktury danych i~spełnia 
+prawa monadyczne w~sposób trywialny (por. grupa wolna, bądź
+inna struktura wolna).
+
+Monady wolne są zapisywane jako poniższe struktury danych:
+\begin{minted}{haskell}
+data Free f a
+  = Roll (f (Free f a))
+  | Done a
+\end{minted}
+gdzie \texttt{f} jest nazywany funktorem zawieszenia.
+
+Monady wolne stanowią uogólnienie monadycznych korutyn. Ściślej mówiąc,
+transformator \mintinline{haskell}{Pipe i o m a} zachowuje izomorfizm:
+
+\begin{minted}{haskell}
+  Pipe i o m ~ Free (PipeF i o m)
+\end{minted}
+gdzie
+\begin{minted}{haskell}
+data PipeF i o m p
+  = Await (i -> p)
+  | Yield o p
+  | Action (m p)
+\end{minted}
+
+W użytym rozwiązaniu monada wolna stanowi strumieniowalną listę grupowalnych
+elementów. Biblioteka \emph{pipes-group} przetwarza tzw.~producentów
+(potoki, które potrafią jedynie wysyłać elementy) do monady wolnej,
+w~której funktorem zawieszenia jest producent. W~ten~sposób możemy 
+wykonywać monadę wolną (często mówi~się, że~dokonuje~się jej~interpretacji)
+otrzymując przy~tym producentów, którzy wysyłają konkretne grupy elementów.
+Przykładowo funkcja \mintinline{haskell}{Pipes.Group.chunksOf} zamienia producenta~na wolną monadę
+z~zawieszonymi producentami, którzy produkują co~najwyżej~\( n \) elementów
+wyjściowych.
+
+Również biblioteka \emph{pipes-group} pozwala na~zwijanie producentów
+pochodzących z~monady wolnej (np.~\texttt{Pipes.Group.folds}).
+
+Więcej informacji na~temat tej~biblioteki można znaleźć na~załączonym
+do~niej tutorialu~\cite{Hackage:Pipes-Groups-Tut}.
+
+Ponadto, interfejsem, który pozwala na grupowanie, czy łączenie podstrumieni,
+są soczewki. Ponieważ ich~użycie jest sporadyczne w~projekcie, nie~będą
+one~opisywane dokładniej w~rozważaniach. O soczewkach zbudowanych
+na~profunktorach można przeczytać w~\cite{Pickering_2017}.
+
+\section{Kodowanie, a~inne języki programowania}
+
+W~tej~sekcji zostaną opisane problemy, które wystąpiły w~trakcie implementacji
+kodowania w~innych językach funkcyjnych niż~Haskell. 
+
+\subsection{Scala}
+
+Scala jest językiem wieloparadygmatowym, opracowanym przez Martina Oderskiego~\cite{Odersky:BHS}.
+Scala w~przeważającej części jest językiem funkcyjnym, która implementuję gorliwą strategię
+ewaluacji.
+
+By~zastosować powyższe propozycje rozwiązań, Scala musiałaby~być językiem czysto funkcyjnym.
+Oczywiście, jest~to możliwe, jednakże pisanie monadycznego kodu w~sposób rozszerzalny
+wymaga użycia dodatkowych bibliotek, które są~słabo udokumentowane, bądź są~wybrakowane.
+Ponadto, implementacja korutyn w~Scali może~być kłopotliwa ze~względu na~ograniczenia
+na~stosie, co~generuje kolejny problem w~implementacji. Oczywistym sposobem byłoby
+sporządzenie minimalnej wersji tej~biblioteki, jednakże wybiegałoby~to poza tematykę pracy.
+
+Kompromisem od~pisania kodu w~czysto funkcyjny sposób byłoby napisanie~go, używając
+mniej czystego kodu, przez~co również mijałoby~się to z~podjętym problemem w~pracy.
+
+Realną przeszkodą w~implementacji wersji ,,kompromisowej'' było zachowanie mutowalnych
+domknięć w~Scali. Środowisko zmiennych domknięcia okazało się być~kopiowane za~każdym razem, kiedy
+domknięcie zostało użyte. Dzieję~się~tak, ponieważ sam JVM nie~akceptuje modyfikowalnych
+domknięć, które~są \emph{de facto} instancjami klas wewnętrznych, bądź są anonimowe~\cite{Oracle:IC}; co~więcej, 
+zmienne muszą być~\emph{skutecznie niemutowalne}, czyli takie, które są~jawnie 
+niemutowalne, bądź wynika~to ze~statycznej analizy kodu, stąd projekt został porzucony.
+
+\end{document}
