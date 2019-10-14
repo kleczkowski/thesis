@@ -90,9 +90,11 @@ jako mutowalne.
 
 Oczywiście, jest to powód do dalszych rozważań na temat przyspieszenia
 tego kodu, zachowując odpowiedni poziom ekspresji kodu, jaki został
-osiągnięty do tej pory. Stąd rozważa się dalsze ulepszenia tej pracy, 
-patrząc na słabe punkty
-tego kodera.
+osiągnięty do tej pory. Haskell posiada wiele narzędzi, które mogą
+prowadzić do zoptymalizowania kodu projektu, jak i technik, które
+pozwalają je zaimplementować.
+
+Stąd rozważa się dalsze ulepszenia tej pracy, patrząc na słabe punkty tego kodera.
 
 \subsection{Implementacja projektu za pomocą FFI}
 
@@ -125,19 +127,29 @@ Ten problem może się wiązać z następującymi powodami:
     przez co \emph{de facto} nie jest kompilowana do pętli. Dzieje się tak,
     ponieważ monada wprowadza dodatkowy kontekst, przez co optymalizacja
     takiej funkcji, która wprowadza rekursję ogonową, nie jest przeprowadzana.
-  \item Konwersja między ciągami surowych bajtów a obiektami może zabierać
-    czas podczas odpytywania tablicy. Można użyć również wersji, w której
-    przechowuje się same referencje, jak w wypadku referencji
-    do pojedynczych obiektów. Oczywiście, taka wersja dodaje niepotrzebny
-    poziom pośredniości przez dodanie wskaźników, co może jeszcze bardziej
-    znacząco zaburzyć czas wykonywania. Mimo niezadowalających wyników,
-    rozsądnym wydaje się pozostawienie tablicy w bieżącej wersji,
-    która bezpośrednio interpretuje ciągi bajtów.
+  \item Znaczący procent alokacji w tym centrum kosztu może wiązać się z
+    alokacją liczb całkowitych na stercie środowiska czasu uruchomienia
+    i natychmiastową ich konsumpcją, przez co wzrasta czas użycia odśmiecacza
+    pamięci. Ponieważ jest to problem, który nie wydaje się tak kluczowy
+    w skali całego projektu (czas odśmiecania pamięci mieści się co do
+    jednego, dwóch rzędów mniej niż czas wykonywania), stąd jego rozwiązywanie
+    nie dałoby wymiernych efektów.
 \end{itemize}
-
 
 \subsection{Wariant biblioteki \texttt{pipes} w stylu CPS}
 
+Natomiast spoglądając na najdroższe (prócz funkcji \texttt{main}) centrum kosztu,
+funkcję \texttt{lift} możemy przypuszczać co do tego, że biblioteka strumieniująca
+nie jest przystosowana do takich zastosowań jak strumieniujące algorytmy
+kompresji.
 
+Oczywiście, możnaby zaimplementować bibliotekę \texttt{pipes}
+stosując kodowanie Churcha struktury danych za nią stojących.
+To mogłoby sprowadzić użycie obiektu strumienia w taki sposób, w którym
+operuje się na złożeniach funkcji, a przez to takie rozwiązanie może sprzyjać
+fuzji strumieni.
+Też wartym zastanowienia się jest implementacja fuzji i oddrzewiania
+dla biblioteki do strumieniowania, by móc zaimplementować bardziej
+zaawansowane optymalizacje, czy też udostępniać inne już zaimplementowane.
 
 \end{document}
