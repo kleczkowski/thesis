@@ -1,0 +1,583 @@
+% ***************************************************************************************************
+%
+%	Szablon pracy magisterskiej dla Politechniki Wrocławskiej w wersji dwustronnej.
+%	Autor:	Tomasz Strzałka
+%
+% ***************************************************************************************************
+
+% Styl dwustronny z domyślną wielkością czcionki 10pt oraz oddzieloną stroną tytułową (titlepage).
+% Domyślnie rodziały rozpoczynają się na stronie prawej (openright).
+\documentclass{book}
+\usepackage{biblatex}
+\usepackage[outputdir=build]{minted}
+
+\bibliography{chap/02/analysis.bib}
+
+% ***************************************************************************************************
+% Ustawienia języka
+% ***************************************************************************************************
+
+% Podstawowe ustawienia języka, według którego formatowany będzie dokument
+\usepackage[polish]{babel}
+
+% Pakiet babel dla polskiego języka powoduje konflikt z pakietem amssymb.
+% Polecenie '\lll' definiują oba pakiety - porządana jest druga definicja.
+\let\lll\undefined
+
+% W przypadku wielojęzykowości ustawia główny język dokumentu
+\selectlanguage{polish}
+
+% Kodowanie dokumentu
+\usepackage[utf8]{inputenc}
+
+% Dowolny rozmiar czcionek, kodowanie znaków
+\usepackage{lmodern}
+
+% Polskie wcięcia akapitów
+\usepackage{indentfirst}
+
+% Polskie łamanie wyrazów
+\usepackage[plmath]{polski}
+
+% Przecinek w wyrażeniach matematycznych zamiast kropki
+\usepackage{icomma}
+
+% Polskie formatowanie typograficzne
+\frenchspacing
+
+% Zapewnia liczne usprawnienia wyświetlania i organizacji matematycznych formuł. 
+\usepackage{amsmath}
+
+% Wprowadza rozszerzony zestaw symboli m.in. \leadsto
+\usepackage{amssymb}
+
+% Dodatkowa, ,,kręcona'' czcionka matematyczna
+\usepackage{mathrsfs}
+
+% Dodatkowe wsparcie dla środowiska mathbb, które nie wspiera domyślnie cyfr (\mathbb{})
+\usepackage{bbold}
+
+% Fixes/improves amsmath
+\usepackage{mathtools}
+
+
+% ***************************************************************************************************
+% Kolory  
+% ***************************************************************************************************
+
+% Umożliwia kolorowanie poszczególnych komórek tabeli
+\usepackage[table]{xcolor}% http://ctan.org/pkg/
+
+% Umożliwia łatwą zmianę koloru linii w tabeli
+\usepackage{tabu}
+
+% Umożliwia rozszerzoną kontrolę nad kolorami.
+\usepackage{xcolor}
+
+% Definicje kolorów
+\definecolor{lgray}{HTML}{9F9F9F}
+\definecolor{dgray}{HTML}{5F5F5F}
+% lgray				-	nazwa nowo zdefiniowanego koloru
+% HTML				-	model kolorów
+% CCCCCC			-	wartość koloru zgodna z modelem
+
+% ***************************************************************************************************
+% Algorytmy 
+% ***************************************************************************************************
+
+% Udostępnia środowisko do konstruowania pseudokodów
+\usepackage[ruled,vlined,linesnumbered,longend,algochapter]{algorithm2e}
+% ruled	- poziome kreski na początku i końcu algorytmu, podpis na górze oddzielony również kreską poziomą
+% vlined - pionowe kreski łączące początek polecenia z jego końcem
+% linesnumbered	- numerowanie kolejnych wierszy algorytmu
+% longend - długie końcówki np. ifend, forend itd.
+% algochapter - numeracja z rozdziałami
+
+% Zamiana nazwy środowiska z domyślnej "Algorithm X" na "Pseudokod X"
+\newenvironment{pseudokod}[1][htb]{
+	\renewcommand{\algorithmcfname}{Pseudokod}
+	\begin{algorithm}[#1]%
+	}{
+\end{algorithm}
+}
+
+% Zmiana rozmiaru komentarzy
+\newcommand\algcomment[1]{
+	\footnotesize{#1}
+}
+
+% Ustawienie zadanego stylu dla komentarzy
+\SetCommentSty{algcomment}
+
+% Wyśrodkowana tylda
+\usepackage{textcomp}%
+\newcommand{\textapprox}{\raisebox{0.5ex}{\texttildelow}}
+
+% Listowanie kodów źródłowych
+\usepackage{listings} 
+\renewcommand{\lstlistingname}{Kod źródłowy} % Polska nazwa listingu
+
+% Definicje pecjalnych znaków, które nie są obsługiwane w środowisku listing
+\lstset{literate=
+	{ż}{{\.{z}}}1	{ź}{{\'{z}}}1
+	{ć}{{\'{c}}}1	{ń}{{\'{n}}}1
+	{ą}{{\c a}}1	{ś}{{\'{s}}}1
+	{ł}{{\l}}1		{ę}{{\c{e}}}1
+	{ó}{{\'{o}}}1	{á}{{\'a}}1
+	{é}{{\'e}}1		{í}{{\'i}}1
+	{ó}{{\'o}}1		{ú}{{\'u}}1
+	{ù}{{\`u}}1		{Á}{{\'A}}1
+	{É}{{\'E}}1		{Í}{{\'I}}1
+	{Ó}{{\'O}}1		{Ú}{{\'U}}1
+	{à}{{\`a}}1		{è}{{\'e}}1
+	{ì}{{\`i}}1		{ò}{{\`o}}1
+	{ò}{{\`o}}1		{À}{{\`A}}1
+	{È}{{\'E}}1		{Ì}{{\`I}}1
+	{Ò}{{\`O}}1		{Ò}{{\`O}}1
+	{ä}{{\"a}}1		{ë}{{\"e}}1
+	{ï}{{\"i}}1		{ö}{{\"o}}1
+	{ü}{{\"u}}1		{Ä}{{\"A}}1
+	{Ë}{{\"E}}1		{Ï}{{\"I}}1
+	{Ö}{{\"O}}1		{Ü}{{\"U}}1
+	{â}{{\^a}}1		{ê}{{\^e}}1
+	{î}{{\^i}}1		{ô}{{\^o}}1
+	{û}{{\^u}}1		{Â}{{\^A}}1
+	{Ê}{{\^E}}1		{Î}{{\^I}}1
+	{Ô}{{\^O}}1		{Û}{{\^U}}1
+	{œ}{{\oe}}1		{Œ}{{\OE}}1
+	{æ}{{\ae}}1		{Æ}{{\AE}}1
+	{ß}{{\ss}}1		{ç}{{\c c}}1
+	{Ç}{{\c C}}1	{ø}{{\o}}1
+	{å}{{\r a}}1	{Å}{{\r A}}1
+	{€}{{\EUR}}1	{£}{{\pounds}}1
+}
+
+% ***************************************************************************************************
+% Marginesy 
+% ***************************************************************************************************
+
+% Ustawienia rozmiarów stron i ich marginesów
+\usepackage[headheight=18pt, top=25mm, bottom=25mm, left=25mm, right=25mm]{geometry}
+% headheight		-	wysokość tytułów
+% top				-	margines górny
+% bottom			-	margines dolny
+% left				-	margines lewy
+% right				-	margines prawy
+
+% Usunięcie górnego marginesu dla środowisk
+\makeatletter
+\setlength\@fptop{0\p@}	
+\makeatother
+
+% ***************************************************************************************************
+% Styl 
+% ***************************************************************************************************
+
+% Definiuje środowisko 'titlingpage', które zapewnia pełną kontrolę nad układem strony tytułowej.
+\usepackage{titling}
+
+
+% Umożliwia modyfikowanie stylu spisu treści
+\usepackage{tocloft}	
+
+\tocloftpagestyle{tableOfContentStyle}
+
+% Definiowanie własnych stylów nagłówków i/lub stopek
+\usepackage{fancyhdr}
+
+% Domyślny styl dla pracy 
+\fancypagestyle{custom}{
+	\fancyhf{}									% wyczyść stopki i nagłówki
+	\fancyhead[RO]{								% Prawy, nieparzysty nagłówek
+		\hrulefill \hspace{16pt} \large Rozdział \thechapter
+		\put(-472.1, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{pwr-logo}
+			}
+		}
+		\put(-443,5.5){%
+			\makebox(0,0)[l]{%
+				\small Politechnika Wrocławska
+			}
+		}
+	}
+	\fancyhead[LE]{								% Lewy, parzysty nagłówek
+		\large Rozdział \thechapter \hspace{16pt} \hrulefill 
+		\put(-22, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{wppt-logo}
+			}
+		}
+		\put(-210,5.5){%
+			\makebox(0,0)[l]{%
+				\small Wydział Podstawowych Problemów Techniki
+			}
+		}
+	}
+	\fancyfoot[LE,RO]{							% Stopki
+		\thepage
+	}
+	\renewcommand{\headrulewidth}{0pt}			% Grubość linii w nagłówku
+	\renewcommand{\footrulewidth}{0.2pt}		% Grubość linii w stopce
+}
+
+
+% Domyślny styl dla bibliografii
+\fancypagestyle{bibliographyStyle}{
+	\fancyhf{}									% wyczyść stopki i nagłówki
+	\fancyhead[RO]{								% Prawy, nieparzysty nagłówek
+		\hrulefill \hspace{16pt} \large Dodatek \thechapter
+		\put(-472.1, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{pwr-logo}
+			}
+		}
+		\put(-443,5.5){%
+			\makebox(0,0)[l]{%
+				\small Politechnika Wrocławska
+			}
+		}
+	}
+	\fancyhead[LE]{								% Lewy, parzysty nagłówek
+		\large Bibliografia \hspace{16pt} \hrulefill 
+		\put(-22, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{wppt-logo}
+			}
+		}
+		\put(-210,5.5){%
+			\makebox(0,0)[l]{%
+				\small Wydział Podstawowych Problemów Techniki
+			}
+		}
+	}
+	\fancyfoot[LE,RO]{							% Stopki
+		\thepage
+	}
+	\renewcommand{\headrulewidth}{0pt}			% Grubość linii w nagłówku
+	\renewcommand{\footrulewidth}{0.2pt}		% Grubość linii w stopce
+}
+
+% Domyślny styl dla dodatków
+\fancypagestyle{appendixStyle}{
+	\fancyhf{}									% wyczyść stopki i nagłówki
+	\fancyhead[RO]{								% Prawy, nieparzysty nagłówek
+		\hrulefill \hspace{16pt} \large Dodatek \thechapter
+		\put(-472.1, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{pwr-logo}
+			}
+		}
+		\put(-443,5.5){%
+			\makebox(0,0)[l]{%
+				\small Politechnika Wrocławska
+			}
+		}
+	}
+	\fancyhead[LE]{								% Lewy, parzysty nagłówek
+		\large Dodatek \thechapter \hspace{16pt} \hrulefill 
+		\put(-22, 12.1){%
+			\makebox(0,0)[l]{%
+				\includegraphics[width=0.05\textwidth]{wppt-logo}
+			}
+		}
+		\put(-210,5.5){%
+			\makebox(0,0)[l]{%
+				\small Wydział Podstawowych Problemów Techniki
+			}
+		}
+	}
+	\fancyfoot[LE,RO]{							% Stopki
+		\thepage
+	}
+	\renewcommand{\headrulewidth}{0pt}			% Grubość linii w nagłówku
+	\renewcommand{\footrulewidth}{0.2pt}		% Grubość linii w stopce
+}
+
+% Osobny styl dla stron zaczynających rozdział/spis treści itd. (domyślnie formatowane jako "plain")
+\fancypagestyle{chapterBeginStyle}{
+	\fancyhf{}%
+	\fancyfoot[LE,RO]{
+		\thepage
+	}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0.2pt}
+}
+
+% Styl dla pozostałych stron spisu treści
+\fancypagestyle{tableOfContentStyle}{
+	\fancyhf{}%
+	\fancyfoot[LE,RO]{
+		\thepage
+	}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0.2pt}
+}
+
+% Formatowanie tytułów rozdziałów i/lub sekcji
+\usepackage{titlesec}
+
+% Formatowanie tytułów rozdziałów
+\titleformat{\chapter}[hang]					% kształt
+{
+	\vspace{-10ex}
+	\Huge
+	\bfseries
+}												% formatowanie tekstu modyfikowanego elementu
+{}												% etykieta występująca przed tekstem modyfikowanego elementu, niewidoczna w spisie treści
+{
+	10pt
+}												% odstęp formatowanego tytułu od lewego marginesu/etykiety
+{
+	\Huge
+	\bfseries
+}												% formatowanie elementów przed modyfikowanym tytułem
+[
+\vspace{2ex}
+%\rule{\textwidth}{0.4pt}
+%\vspace{-4ex}
+]												% dodatkowe formatowanie stosowane poniżej modyfikowanego tytułu
+
+
+% Formatowanie tytułów sekcji
+\titleformat{\section}[hang]					% kształt
+{
+	\vspace{2ex}
+%	\titlerule\vspace{1ex}
+	\Large\bfseries
+}												% formatowanie tekstu modyfikowanego elementu
+{
+	\thesection									% etykieta występująca przed tekstem modyfikowanego elementu, niewidoczna w spisie treści
+}
+{
+	0pt
+}												% odstęp formatowanego tytułu od lewego marginesu/etykiety
+{
+	\Large
+	\bfseries
+}												% formatowanie elementów przed modyfikowanym tytułem
+
+% ***************************************************************************************************
+% Linki
+% ***************************************************************************************************
+
+% Umożliwia wstawianie hiperłączy do dokumentu
+\usepackage{hyperref}							% Aktywuje linki
+
+\hypersetup{
+	colorlinks	=	true,					% Koloruje tekst zamiast tworzyć ramki.
+	linkcolor		=	blue,					% Kolory: referencji,
+        citecolor		=	blue,					% cytowań,
+	urlcolor		=	blue					% hiperlinków.
+}
+
+% Do stworzenia hiperłączy zostanie użyta ta sama (same) czcionka co dla reszty dokumentu
+\urlstyle{same}
+
+
+
+
+% ***************************************************************************************************
+% Linki
+% ***************************************************************************************************
+
+% Umożliwia zdefiniowanie własnego stylu wyliczeniowego
+\usepackage{enumitem}
+
+% Nowa lista numerowana z trzema poziomami
+\newlist{myitemize}{itemize}{3}
+
+% Definicja wyglądu znacznika pierwszego poziomu
+\setlist[myitemize,1]{
+	label		=	\textbullet,
+	leftmargin	=	4mm}
+
+% Definicja wyglądu znacznika drugiego poziomu
+\setlist[myitemize,2]{
+	label		=	$\diamond$,
+	leftmargin	=	8mm}
+
+% Definicja wyglądu znacznika trzeciego poziomu
+\setlist[myitemize,3]{
+	label		=	$\diamond$,
+	leftmargin	=	12mm
+}
+
+% ***************************************************************************************************
+% Inne pakiety
+% ***************************************************************************************************
+
+% Dołączanie rysunków
+\usepackage{graphicx}
+
+% Figury i przypisy
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Umożliwia tworzenie przypisów wewnątrz środowisk
+\usepackage{footnote}
+
+% Umożliwia tworzenie struktur katalogów
+\usepackage{dirtree}
+
+% Rozciąganie komórek tabeli na wiele wierszy
+\usepackage{multirow}
+
+% Precyzyjne obliczenia szerokości/wysokości dowolnego fragmentu wygenerowanego przez LaTeX
+\usepackage{calc}
+
+% ***************************************************************************************************
+% Matematyczne skróty
+% ***************************************************************************************************
+
+% Skrócony symbol liczb rzeczywistych
+\newcommand{\RR}{\mathbb{R}}
+
+% Skrócony symbol liczb naturalnych
+\newcommand{\NN}{\mathbb{N}}
+
+% Skrócony symbol liczb wymiernych
+\newcommand{\QQ}{\mathbb{Q}}
+
+% Skrócony symbol liczb całkowitych
+\newcommand{\ZZ}{\mathbb{Z}}
+
+% Skrócony symbol logicznej implikacji
+\newcommand{\IMP}{\rightarrow}
+
+% Skrócony symbol  logicznej równoważności
+\newcommand{\IFF}{\leftrightarrow}
+
+% ***************************************************************************************************
+% Środowiska
+% ***************************************************************************************************
+
+% Środowisko do twierdzeń
+\newtheorem{theorem}{Twierdzenie}[chapter]
+
+% Środowisko do lematów
+\newtheorem{lemma}{Lemat}[chapter]
+
+% Środowisko do przykładów
+\newtheorem{example}{Przykład}[chapter]
+
+% Środowisko do wniosków
+\newtheorem{corollary}{Wniosek}[chapter]
+
+% Środowisko do definicji
+\newtheorem{definition}{Definicja}[chapter]
+
+% Środowisko do dowodów
+\newenvironment{proof}{
+	\par\noindent \textbf{Dowód.}
+}{
+\begin{flushright}
+	\vspace*{-6mm}\mbox{$\blacklozenge$}
+\end{flushright}
+}
+
+% Środowisko do uwag
+\newenvironment{remark}{
+	\bigskip \par\noindent \small \textbf{Uwaga.}
+}{
+\begin{small}
+	\vspace*{4mm}
+\end{small}
+}
+
+% ***************************************************************************************************
+% Słownik
+% ***************************************************************************************************
+
+% Prawidłowe dzielenie wyrazów
+\hyphenation{wszy-stkich ko-lu-mnę każ-da od-leg-łość
+	dzie-dzi-ny dzie-dzi-na rów-nych rów-ny
+	pole-ga zmie-nna pa-ra-met-rów wzo-rem po-cho-dzi
+	o-trzy-ma wte-dy wa-run-ko-wych lo-gicz-nie
+	skreś-la-na skreś-la-ną cał-ko-wi-tych wzo-rów po-rzą-dek po-rząd-kiem
+	przy-kład pod-zbio-rów po-mię-dzy re-pre-zen-to-wa-ne
+	rów-no-waż-ne bi-blio-te-kach wy-pro-wa-dza ma-te-ria-łów
+	prze-ka-za-nym skoń-czo-nym moż-esz na-tu-ral-na cią-gu tab-li-cy
+	prze-ka-za-nej od-po-wied-nio}
+
+% ***************************************************************************************************
+% Dokument
+% ***************************************************************************************************
+
+\usepackage{subfiles}
+
+\frontmatter
+
+\begin{document}
+
+	\begin{titlingpage}
+		\vspace*{\fill}
+		\begin{center}
+			\begin{picture}(300,510)
+				\put(11,520){\makebox(0,0)[l]{\large \textsc{Wydział Podstawowych Problemów Techniki}}}
+				\put(11,500){\makebox(0,0)[l]{\large \textsc{Politechnika Wrocławska}}}
+% Tytuł pracy
+                                \put(80,320){\Huge \textsc{Kodowanie arytmetyczne}}
+				\put(80,280){\Huge \textsc{w językach funkcyjnych}}
+%				\put(80,240){\Huge \textsc{dyplomowej}}
+% Autor pracy
+				\put(90,200){\makebox(0,0)[l]{\large \textsc{Konrad Kleczkowski}}}
+				\put(90,180){\makebox(0,0)[l]{\large \textsc{Nr indeksu: 236426}}}
+
+				\put(200,100){\makebox(0,0)[l]{\large Praca magisterska napisana}}
+				\put(200,80){\makebox(0,0)[l]{\large pod kierunkiem}}
+% dane promotora
+				\put(200,60){\makebox(0,0)[l]{\large dra Macieja Gębali}}
+				
+				\put(115,-70){\includegraphics[width=0.15\textwidth]{pwr}}
+				\put(106,-80){\makebox(0,0)[bl]{\large \textsc{Wrocław 2019}}}
+			\end{picture}
+		\end{center}	
+		\vspace*{\fill}
+	\end{titlingpage}
+	
+        \cleardoublepage
+		
+	\pagenumbering{Roman}
+	\pagestyle{tableOfContentStyle}
+	\tableofcontents
+	\cleardoublepage
+		
+	% ***************************************************************************************************
+	% Wstęp
+	% ***************************************************************************************************
+	
+	\pagestyle{custom}
+	\mainmatter
+	
+        \subfile{chap/01/intro.tex}
+        \subfile{chap/02/analysis.tex}
+        \subfile{chap/03/project.tex}
+        \subfile{chap/04/impl.tex}
+        \subfile{chap/05/summary.tex}
+
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BIBLIOGRAFIA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	\pagestyle{bibliographyStyle}
+%	\bibliographystyle{plabbrv}
+        \printbibliography
+	\thispagestyle{chapterBeginStyle}
+        \addcontentsline{toc}{chapter}{Bibliografia}
+
+	\cleardoublepage
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DODATKI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	\appendix
+	\pagestyle{appendixStyle}
+	
+        \subfile{chap/appendix.tex}
+	\cleardoublepage
+
+\end{document}
+

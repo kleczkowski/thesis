@@ -1,4 +1,4 @@
-\documentclass[../../thesis.tex]{subfiles}
+\documentclass[../../praca.tex]{subfiles}
 
 \begin{document}
 
@@ -14,8 +14,6 @@ W~dolnej podtabeli zostały podane biblioteki użyte do~testowania
 aplikacji.
 
 \begin{table}
-  \label{tab:directories}
-  \caption{Struktura katalogowa projektu \texttt{ac-haskell}}
   \centering
   \begin{tabular}{|l|p{8cm}|}
     \hline
@@ -25,11 +23,11 @@ aplikacji.
     \texttt{test}               & Zawiera kod testów jednostkowych. \\ \hline
     \texttt{src}                & Zawiera główny kod projektu. \\ \hline 
   \end{tabular}
+  \caption{Struktura katalogowa projektu \texttt{ac-haskell}}
+  \label{tab:directories}
 \end{table}
 
 \begin{table}
-  \label{tab:modules}
-  \caption{Moduły projektu \texttt{ac-haskell}}
   \centering
   \begin{tabular}{|l|p{8cm}|}
     \hline 
@@ -43,11 +41,11 @@ aplikacji.
     \texttt{Codec.AC.FreqTree}  & Zawiera implementację drzewa Fenwicka w~oparciu 
                                   o~mutowalne tablice. \\ \hline
   \end{tabular}
+  \caption{Moduły projektu \texttt{ac-haskell}}
+  \label{tab:modules}
 \end{table}
 
 \begin{table}
-  \label{tab:libs}
-  \caption{Użyte biblioteki w~projekcie \texttt{ac-haskell}}
   \centering
   \begin{tabular}{|l|p{8cm}|}
     \hline
@@ -64,7 +62,7 @@ aplikacji.
     \texttt{optparse-applicative}&Biblioteka służąca do~parsowania argumentów podanych 
                                   do~interfejsu tekstowego kodera. \\ \hline
     \texttt{bytestring-arbitrary}&Biblioteka pozwalająca na~dostarczanie przykładów ciągów bajtów
-                                  dla narzędzia testującego~\textt{QuickCheck} \\ \hline
+                                  dla narzędzia testującego~\texttt{QuickCheck} \\ \hline
     \texttt{transformers}       & Biblioteka dostarczająca transformatory monad. \\ \hline
     \texttt{vector}             & Wydajna implementacja mutowalnych i~niemutowalnych tablic. \\ \hline
     \hline
@@ -80,6 +78,8 @@ aplikacji.
     \texttt{random-bytestring}  & Biblioteka pozwalająca na~generowanie losowych ciągów bajtów
                                   w~monadzie~\texttt{IO} na~potrzeby narzędzia~\texttt{criterion}. \\ \hline
   \end{tabular}
+  \caption{Użyte biblioteki w~projekcie \texttt{ac-haskell}}
+  \label{tab:libs}
 \end{table}
 
 \section{Konfiguracja projektu}

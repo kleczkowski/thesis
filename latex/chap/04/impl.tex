@@ -1,4 +1,4 @@
-\documentclass[../../thesis.tex]{subfiles}
+\documentclass[../../praca.tex]{subfiles}
 
 \begin{document}
 
@@ -42,8 +42,6 @@ Zgodnie z~powyższą metodologią otrzymano wyniki opisane
 w~tabeli~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
 
 \begin{table}[h]
-  \label{tab:encode-time}
-  \caption{Średnia obcięta czasu wykonywania operacji kodowania}
   \centering
   \begin{tabular}{| l | r | r |}
     \hline
@@ -52,11 +50,11 @@ w~tabeli~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
     \texttt{zeros.1m} & 2,813 s & 8,380 s\\ \hline
     \texttt{random.1m} & 3,369 s & 24,813 s\\ \hline
   \end{tabular}
+  \caption{Średnia obcięta czasu wykonywania operacji kodowania}
+  \label{tab:encode-time}
 \end{table}
 
 \begin{table}[h]
-  \label{tab:decode-time}
-  \caption{Średnia obcięta czasu wykonywania operacji dekodowania}
   \centering
   \begin{tabular}{| l | r | r |}
     \hline
@@ -65,6 +63,8 @@ w~tabeli~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
     \texttt{zeros.1m} & 3,250 s & 14,656 s\\ \hline
     \texttt{random.1m} & 3,964 s & 33,203 s\\ \hline
   \end{tabular}
+  \caption{Średnia obcięta czasu wykonywania operacji dekodowania}
+  \label{tab:decode-time}
 \end{table}
 
 Należy zauważyć, że testowany koder napisany w Haskellu

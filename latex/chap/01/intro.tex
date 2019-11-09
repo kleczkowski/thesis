@@ -1,7 +1,56 @@
-\documentclass[../../thesis.tex]{subfiles}
+\documentclass[../../praca.tex]{subfiles}
 
 \begin{document}
 
 \chapter{Wprowadzenie}
+
+Powyższa praca odpowiada na pytanie:
+\begin{center}
+  \textit{Czy i w jaki sposób można napisać algorytm korzystający z mutowalnego stanu
+  zachowując szybkość i czytelność tego rozwiązania w oparciu o funkcyjne
+  języki programowania?}
+\end{center}
+
+Funkcyjne języki programowania są znane z tego, że unikają mutowalności 
+na rzecz kopiowania obiektów niemutowalnych, co niewątpliwie jest nie tak optymalne,
+jak mutowanie struktur w miejscu. Stąd autor zaimplementował strumieniujący
+wariant adaptacyjnego kodowania arytmetycznego z naciskiem na:
+\begin{itemize}
+  \item zachowanie własności strumieniowania tego algorytmu z wykorzystaniem stałej
+    ilości pamięci do przetwarzania;
+  \item zapisanie implementacji w sposób przejrzysty i modularny, co zostanie uzyskane
+    za pomocą tzw. potoków;
+  \item optymalizacją czasową algorytmu, w szczególności zaimplementowana jest
+    struktura danych, która realizuję tabelę częstotliwości, w której aktualizacja
+    i odpytywanie jest w czasie logarytmicznym;
+  \item bezpieczne użycie mutowalności w miejscu --- użyta jest monada \texttt{ST s a},
+    która pozwala na mutowanie struktur w miejscu, przy zachowaniu transparentności
+    referencyjnej.
+\end{itemize}
+
+Praca również sprawdza, czy zaimplementowane rozwiązanie może konkurować z rozwiązaniami
+napisanymi w językach imperatywnych uważanych powszechnie za szybkie, tj. C++. 
+Ponadto praca opisuje próby związane z innymi językami wybranymi do implementacji projektu.
+Ostatecznie projekt, ze względu na różne problemy natury technicznej, został napsiany
+w Haskellu.
+
+\section{Struktura pracy}
+
+Praca dzieli się na pięć rozdziałów. W rozdziale drugim autor analizuje postawione
+w pracy problemy, które skupiają się wokół realizacji projektu, oraz dokonuje przeglądu
+literatury, która dokładniej opisuje dane problemy i ich rozwiązania.
+
+W trzecim rozdziale opisana jest struktura projektu i sposób jego kompilacji, testowania
+oraz wdrożenia. Również został opisany sposób generacji dokumentacji projektu.
+
+W czwartym rozdziale opisane są testy porównawcze między napisanym projektem a próbką 
+referencyjną napisaną w C++ oraz przedstawione są wyniki tych testów z krótkim 
+podsumowaniem.
+
+W piątym rozdziale znajduje się krótko sformułowane, właściwe podsumowanie oraz dalsze
+rozważania możliwe do podjęcia w tej pracy.
+
+Poza tym praca zawiera spis tablic, bibliografię i dodatek opisujący zawartość załączonej
+płyty CD.
 
 \end{document}
