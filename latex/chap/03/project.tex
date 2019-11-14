@@ -91,6 +91,63 @@ jest bardzo proste, a~sama~jej treść jest samoopisująca~się.
 
 % TODO: Wstawić tutaj listing z konfiguracją package.yaml
 
+\begin{listing}
+  \begin{minted}{yaml}
+name:     ac-haskell
+version:  0.1.0
+synopsis: A streaming implementation of arithmetic coding
+category: Compression
+author:   Konrad Kleczkowski <konrad.kleczkowski@gmail.com>
+license:  MIT
+
+dependencies:
+- base == 4.* && < 5.0
+- bytestring
+- pipes
+- pipes-bytestring
+- pipes-group
+- fixed
+- mtl
+- lens
+- transformers
+- primitive
+- vector
+
+library:
+  source-dirs:    src
+
+executables:
+  ac-haskell:
+    source-dirs:  app
+    main:         Main.hs
+    dependencies:
+    - ac-haskell
+    - optparse-applicative
+
+tests:
+  ac-haskell-spec:
+    source-dirs:  test
+    main:         Spec.hs
+    dependencies:
+    - ac-haskell
+    - hspec
+    - QuickCheck
+    - random
+    - bytestring-arbitrary
+
+benchmarks:
+  ac-haskell-bench:
+    source-dirs:  bench
+    main:         Bench.hs
+    dependencies:
+    - ac-haskell
+    - criterion
+    - mwc-random
+    - random-bytestring
+  \end{minted}
+  \caption{Przykładowy plik konfiguracyjny pakietu \texttt{ac-haskell}}
+\end{listing}
+
 Tak~sporządzony plik może posłużyć do~inicjalizacji projektu.
 Należy uruchomić polecenie \texttt{stack init} w~folderze,
 w~którym znajduje~się konfiguracja.

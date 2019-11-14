@@ -479,32 +479,4 @@ są soczewki. Ponieważ ich~użycie jest sporadyczne w~projekcie, nie~będą
 one~opisywane dokładniej w~rozważaniach. O soczewkach zbudowanych
 na~profunktorach można przeczytać w~\cite{Pickering_2017}.
 
-\chapter{Kodowanie, a~inne języki funkcyjne} % TODO
-
-W~tym rozdziale zostaną opisane problemy, które wystąpiły w~trakcie implementacji
-kodowania w~innych językach funkcyjnych niż~Haskell. 
-
-\subsection{Scala}
-
-Scala jest językiem wieloparadygmatowym, opracowanym przez Martina Oderskiego~\cite{Odersky:BHS}.
-Scala w~przeważającej części jest językiem funkcyjnym, która implementuję gorliwą strategię
-ewaluacji.
-
-By~zastosować powyższe propozycje rozwiązań, Scala musiałaby~być językiem czysto funkcyjnym.
-Oczywiście, jest~to możliwe, jednakże pisanie monadycznego kodu w~sposób rozszerzalny
-wymaga użycia dodatkowych bibliotek, które są~słabo udokumentowane, bądź są~wybrakowane.
-Ponadto, implementacja korutyn w~Scali może~być kłopotliwa ze~względu na~ograniczenia
-na~stosie, co~generuje kolejny problem w~implementacji. Oczywistym sposobem byłoby
-sporządzenie minimalnej wersji tej~biblioteki, jednakże wybiegałoby~to poza tematykę pracy.
-
-Kompromisem od~pisania kodu w~czysto funkcyjny sposób byłoby napisanie~go, używając
-mniej czystego kodu, przez~co również mijałoby~się to z~podjętym problemem w~pracy.
-
-Realną przeszkodą w~implementacji wersji ,,kompromisowej'' było zachowanie mutowalnych
-domknięć w~Scali. Środowisko zmiennych domknięcia okazało się być~kopiowane za~każdym razem, kiedy
-domknięcie zostało użyte. Dzieję~się~tak, ponieważ sam JVM nie~akceptuje modyfikowalnych
-domknięć, które~są \emph{de facto} instancjami klas wewnętrznych, bądź są anonimowe~\cite{Oracle:IC}; co~więcej, 
-zmienne muszą być~\emph{skutecznie niemutowalne}, czyli takie, które są~jawnie 
-niemutowalne, bądź wynika~to ze~statycznej analizy kodu, stąd projekt został porzucony.
-
 \end{document}
