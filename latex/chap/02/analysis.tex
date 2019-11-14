@@ -8,32 +8,61 @@
 
 Kodowanie arytmetyczne to~jedna z~technik kompresji bezstratnej
 opracowana pierwotnie przez J.~Rissanena i~G.~G.~Langdona w~1976 roku~\cite{Rissanen:AC};
-jej~efektywna implementacja została podana przez I.~Wittena w~1987 roku~\cite{Witten:AC},
-która spopularyzowała tę~technikę kompresji danych.
+jej~efektywna implementacja została podana przez I.~Wittena w~1987 roku~\cite{Witten:AC}.
 
-Główną ideą algorytmu jest zakodowanie strumienia symboli \( (x_i)_{i = 1}^N \)
-ze~zbioru \( S = \{ s_1, s_2, \dotsc, s_n \} \) jako ułamek \( M \in [0, 1) \);
-nad~symbolami mamy ustalony rozkład prawdopodobieństwa \( \{ p_1, p_2, \dotsc, p_n \} \).
+Główną ideą algorytmu jest zakodowanie strumienia symboli 
+ze~zbioru \( S = \{ s_1, s_2, \dotsc, s_n \} \) jako ułamek \( M \in [0, 1) \).
+Nad~symbolami mamy ustalony rozkład prawdopodobieństwa \( \{ p_1, p_2, \dotsc, p_n \} \).
+Przyjmujemy, że $p_{-1} = 0$.
 
 Algorytm kodowania wygląda następująco.
-\begin{enumerate}
-  \item Zainicjalizuj \( I := [0, 1) \).
-  \item Pobierz symbol \( x = s_k \) z~wejścia dla~pewnego \( k = 1, 2, \dotsc, n \).
-  \item Podziel \( I \) na~rozłączne podprzedziały \( \{ I_\ell \}_{\ell = 0}^n \) takie, 
-    że~\( |I| \cdot p_\ell = |I_\ell| \) i~\( I = \bigcup_{\ell = 0}^n I_\ell \).
-  \item Podstaw \( I := I_k \). (Ninejszą operację nazywamy \emph{zwężaniem} przedziału).
-  \item Powtórz~pkt.~2. do~momentu, aż~skończą~się dane.
-\end{enumerate}
+
+\begin{pseudokod}
+  \SetKwInOut{Input}{Wejście}
+  \SetKwInOut{Output}{Wyjście}
+
+  \Input{źródło symboli $Z$}
+  \Output{znacznik $M \in [0, 1)$}
+  \BlankLine
+
+  $l \gets 0$\;
+  $r \gets 1$\;
+  \For{$s_k \gets Z$}{
+    $l' \gets l + (r - l) \cdot p_{k - 1}$\;
+    $r' \gets l + (r - l) \cdot p_k$\;
+    \If{$s_k = EOI$}{
+      \Return $\frac{l' + r'}{2}$\;
+    }
+    $l \gets l'$\;
+    $r \gets r'$\;
+  }
+  \caption{Algorytm kodowania}
+\end{pseudokod}
 
 Algorytm dekodowania znacznika \( M \in [0, 1) \) jest analogiczny:
-\begin{enumerate}
-  \item Zainicjalizuj \( I := [0, 1) \).
-  \item Podziel analogicznie \( I \) na~\( \{ I_\ell \}_{\ell = 0}^n \) 
-    jak~dla~algorytmu kodowania.
-  \item Niech \( k = \min \{ \ell : M \in I_\ell \} \).
-  \item Wypisz symbol \( s_k \).
-  \item Powtórz pkt.~2.
-\end{enumerate}
+\begin{pseudokod}
+  \SetKwInOut{Input}{Wejście}
+  \SetKwInOut{Output}{Wyjście}
+
+  \Input{znacznik $M \in [0, 1)$}
+  
+  $l \gets 0$\;
+  $r \gets 1$\;
+  \For{ever}{
+    $k \gets \max \{ j \ge 0 : l + (r - l) \cdot p_{j - 1} \le M \}$\;
+    \If{$s_k = EOI$}{
+      \Return\; 
+    }
+    \emph{wyślij $s_k$ do strumienia}\;
+    $l' \gets l + (r - l) \cdot p_{k - 1}$\;
+    $r' \gets l + (r - l) \cdot p_k$\;
+    $l \gets l'$\;
+    $r \gets r'$\;
+  }
+
+  \caption{Algorytm dekodowania}
+\end{pseudokod}
+
 
 Podany algorytm zmaga~się z~kilkoma problemami, które zostaną poruszone w~tej sekcji.
 
@@ -57,15 +86,14 @@ podaje następujące rozwiązania:
     odkodowany symbol~\textsc{eoi}.
 \end{enumerate}
 
-Z~powyższych propozycji w~pracy został wybrany pkt.~2. Dodając, to~podejście również
+Z~powyższych propozycji w~pracy został wybrany pkt.~2. Ponadto, to~podejście również
 pozwala na~dodanie symboli, które mogą sterować zachowaniem kodera (np.~kasowanie
 modelu statystycznego, koniec bloku, czy~inne kody związane z~technikami słownikowymi).
 
 \subsection{Kodowanie ze~skalowaniem}
 
 Drugim problemem jest sposób, w~jaki znacznik \( M \) będzie reprezentowany
-oraz wysyłany. Ten~problem jest ściśle związany z~doborem arytmetyki, która będzie
-stała za~realizacją przedziałów w~algorytmie.
+oraz wysyłany. 
 
 Naiwna implementacja za~pomocą liczb o~skończonej precyzji może nieść ze sobą
 problemy w~postaci błędów wynikających z~doboru skończonej arytmetyki, stąd
@@ -79,12 +107,12 @@ Rozwiązanie zakłada użycie dowolnej arytmetyki o~skończonej precyzji, przez
 co~zyskujemy na~szybkości. Co~więcej, można wybrać w~szczególności arytmetykę stałoprzecinkową zrealizowaną 
 na~liczbach całkowitych. 
 
-Po~zwężeniu przedziału, ów~przedział jest poddawany
+Po~zwężeniu przedziału, ten~przedział jest poddawany
 szeregowi przekształceń, które go poszerzają, emitując przy~tym kolejne bity
 rozwinięcia binarnego znacznika~\( M \), który budowany jest przyrostowo.
 To~rozwiązanie pozwala na~osiągnięcie algorytmu, który ma~własność strumieniowania
 --- to~znaczy, koder i~dekoder słuchają swoich stopniowych zmian i~reagują na~każdy
-przychodzący symbol, kolejno bit, danych ze~strumienia. 
+przychodzący symbol ze~strumienia. 
 
 Dokładny opis i~implementacja tzw.~kodowania ze~skalowaniem znajduje~się 
 w~\cite{Sayood:IDC} oraz w~\cite{Witten:AC}.
@@ -98,9 +126,9 @@ Problemem w~kodowaniu arytmetycznym jest dobór modelu statystycznego.
 Im~mniej adekwatny jest model statystyczny, tym~efektywność kodowania
 spada w stosunku do~zakodowania go modelem znanym uprzednio. 
 
-Jeśli wejście jest nieznane, bądź nie~możemy przypuszczać co~do~tego, jaki
+Jeśli wejście jest nieznane, bądź nie~możemy oszacować, jaki
 będzie rozkład prawdopodobieństwa dla~symboli, modele statyczne
-mogą być podatne na takie dane, skutkując tym~nieefektywną kompresją.
+mogą być niewystarczające dla takich danych, skutkując tym~nieefektywną kompresją.
 Z~drugiej strony, wygodnym podejściem jest nieanalizowanie wejścia uprzednio, ponieważ
 algorytm traci własności strumieniujące.
 
@@ -124,7 +152,7 @@ Jego opis został umieszczony w~\cite{Sayood:IDC}.
 
 \subsection{Drzewo Fenwicka}
 
-Również, ważnym pytaniem pozostaje, jaką strukturę danych wybrać, która
+Również, ważnym pytaniem pozostaje, jaką wybrać strukturę danych, która
 zapewniałaby nam szybkie zapytania o~kumulatywną częstotliwość oraz
 jej aktualizację. Jedną z~nich jest binarne drzewo indeksowane, 
 znane~też jako drzewo Fenwicka, od~nazwiska autora~\cite{Fenwick:FT}.
@@ -132,32 +160,43 @@ Ta struktura gwarantuje w~czasie~\( O (\log n) \) zapytanie i~modyfikację
 częstotliwości występowania symboli, ponadto realizuje skalowanie w~\( O (n \log n) \).
 
 Próg skalowania ustala się według ograniczeń przybranej arytmetyki. 
-W~wypadku arytmetyki stałopozycyjnej o~formacie 15.16, należy skalować
+W~wypadku arytmetyki stałopozycyjnej o~formacie, gdzie 16 bitów jest przeznaczona 
+na część ułamkową, należy skalować
 model co~16363 symboli~\cite{Fenwick:FT}.
-
 Jego implementacja i~opis znajduje~się w~\cite{Fenwick:FT}.
 
 \section{Realizacja mutowalnego stanu w językach funkcyjnych}
 
 Programowanie funkcyjne to~jeden z~deklaratywnych paradygmatów programowania,
 w~których pierwszorzędnym bytem jest funkcja, a~głównym pojęciem
-jest ewaluacja funkcji, niżeli wykonywanie konkretnych poleceń,
+jest ewaluacja funkcji, bardziej niż wykonywanie konkretnych poleceń,
 jak~ma to~miejsce w~programowaniu imperatywnym.~\cite{Hudak:Conception}
 
 Funkcyjne języki programowania unikają mutowalnych zmiennych i~innych 
 struktur danych, bądź ograniczają ich~użycie.
 
-W~językach czysto funkcyjnych z~kolei kompletnie odrzucono
+% TODO: Dlaczego potrzebujemy mutowalności?
+Kodowanie arytmetyczne jest algorytmem opartym o mutowalny stan.
+Stanem algorytmu jest zwężany przedział, który będzie aktualizowany
+w ramach przychodzących symboli. Ponieważ sam algorytm może być użyty
+jako algorytm strumieniujący, należy przechowywać tymczasowo stan algorytmu,
+dopóki nie nadejdzie kolejny symbol do zakodowania. Oczywiście, mutowalność
+jest prostopadła do filozofii programowania funkcyjnego, akcentując szczególnie
+języki czysto funkcyjne. Stąd dalej będą rozważane narzędzia, które pozwalają
+na korzystanie z mutowalnego stanu tak, by było to zgodne z filozofią programowania
+funkcyjnego.
+
+W~językach czysto funkcyjnych kompletnie odrzucono
 jawne operacje na~mutowalnych strukturach danych, oferując narzędzia,
 które pozwalają je~osiągnąć w~sposób, który kontroluje i~segreguje
 efekty uboczne za~pomocą takich mechanizmów jak~system typów~\cite{Hudak:Conception}.
-Również zauważono, że pisanie kodu o~bardziej imperatywnej naturze jest
+Zauważono również, że pisanie kodu o~bardziej imperatywnej naturze jest
 trudniejsze przy użyciu czystego kodu.
 
 Jedną z~propozycji segregacji efektów ubocznych były monady~\cite{Wadler:MFP}.
 
 Monady pozwalały na strukturyzację programów napisanych funkcyjnie, co~więcej,
-dawały możliwość mimetyzacji efektów ubocznych takich jak~wyjątki,
+dawały możliwość naśladowania efektów ubocznych takich jak~wyjątki,
 niedeterminizm, odczyt zmiennych globalnych ze~środowiska i~w~szczególności
 mutowalny stan.
 
@@ -200,8 +239,8 @@ jest rzeczoną referencją, która zachowuje~się jak~mutowalna zmienna).
 Usiłowany wyciek referencji poza kontekst monady musiałby~się wiązać z~ukonkretnieniem parametru
 \texttt{s}, przez co~referencje mogą~żyć tylko w~omawianej monadzie.
 
-Najważniejszą zaletą tej~monady, jest wykorzystanie mutowalności wprost, stąd zostaje rozwiązany
-problem zaśmiecanej sterty przez kopię poprzednich, i~jednakowo zbędnych, stanów.
+Najważniejszą zaletą tej~monady jest wykorzystanie mutowalności wprost, stąd zostaje rozwiązany
+problem nadmiernej pracy odśmiecacza pamięci.
 Thomasson zaleca~\cite{Thomasson:HHPP} użycie monady~\texttt{ST} w wypadku, kiedy
 może~dać wymierne korzyści, zwłaszcza~gdy algorytm silnie wykorzystuje mutowalność.
 
@@ -219,12 +258,14 @@ do zrealizowania kodera jako programu.
 
 Monady, zgodnie z~dobrymi praktykami, implementują jeden rodzaj efektów ubocznych.
 Pisząc~kod, który realizuje specyficzny scenariusz, można spodziewać~się, że~będzie
-on~wymagać kilku efektów ubocznych jednocześnie. Przykładowo, pisząc kontrolera typów,
-potrzebne będzie tworzenie logów dot.~błędów typowania oraz dostępu do tabeli symboli.
-Stąd monada, w której zostanie umieszczony kod kontrolera, posiadałaby cechy monady~\texttt{Reader}
-oraz~\texttt{Writer}.
+on~wymagać kilku efektów ubocznych jednocześnie. Przykładowo, pisząc moduł kontroli typów
+w kompilatorze, potrzebne będzie tworzenie logów 
+dot.~błędów typowania oraz dostępu do tabeli symboli, by móc określić typy
+używanych symboli w kompilowanym programie.
+Stąd monada, w której zostanie umieszczony kod modułu kontrolującego typy, 
+posiadałaby cechy monady~\texttt{Reader} oraz~\texttt{Writer}.
 
-Wygodnym i~powszechnym już~sposobem kompozycji monad, a~dokładniej ich~zagnieżdżania, 
+Wygodnym i~powszechnym sposobem kompozycji monad i ich~zagnieżdżania, 
 są~transformatory monad 
 zaproponowane przez~\cite{Jones:FPO}. Transformatory monad działają
 jako szczególne wersje monad zakładające zagnieżdżenie jednej w~drugą.
@@ -246,8 +287,8 @@ Dzięki mechanizmowi klas typów, można pisać kod monadyczny abstrahując od t
 w jakiej kolejności został skomponowany stos monad i w jaki sposób monada
 realizuje dane operacje charakterystyczne dla transformatorów. 
 Dokładniejszą lekturą na temat transformatorów jest~\cite{Grabmuller:MTSS}
-jak~i~\cite{Jones:FPO}. Ogólna technika abstrakcji monad od~implementacji
-znajduje~się również w~\cite{OSullivan:RWH}.
+jak~i~\cite{Jones:FPO}. Ogólna technika określania interfejsu 
+transformowanych ze sobą monad znajduje~się w~\cite{OSullivan:RWH}.
 
 W pracy zostanie wykorzystany transformator~\texttt{ReaderT}, by móc czytać 
 mutowalne referencje w monadzie~\texttt{IO}.
@@ -259,14 +300,15 @@ z jednego komputera do drugiego w czasie rzeczywistym''~\cite{Fallensbee:HGSM}.
 
 Języki funkcyjne często oferują różne semantyki ewaluacji:
 \begin{itemize}
-  \item Gorliwa ewaluacja --- strategia, która wyznacza wartości argumentów
+  \item gorliwa ewaluacja --- strategia, która wyznacza wartości argumentów
     funkcji (również konstruktorów) przed jej wywołaniem;
-  \item Leniwa ewaluacja --- strategia, która wyznacza wartości argumentów
+  \item leniwa ewaluacja --- strategia, która wyznacza wartości argumentów
     funkcji (również konstruktorów), kiedy są one \emph{potrzebne}.
     Przez potrzebę rozumiemy intuicyjnie pierwsze użycie referencji
     danego argumentu.
 \end{itemize}
-Dokładną semantykę leniwego wartościowania i różnice między nimi podaje~\cite{Hudak:Conception}.
+Dokładną semantykę leniwego wartościowania 
+i różnice między nimi podaje~\cite{Hudak:Conception}.
 
 W~kontekście strumieniowania, czyli przetwarzania danych fragmentarycznie,
 kawałek po~kawałku, bez~znajomości treści w~przód, leniwe wartościowanie okazuje~się
@@ -275,7 +317,7 @@ zaletą i~cennym narzędziem do~realizacji strumieniowania.
 \subsection{Leniwe wejście-wyjście}
 
 Jednakże użycie leniwego wartościowania w kontekście leniwego wejścia-wyjścia,
-mimo elegancji, okazuje~się mieć kilka technicznych przeszkód --- główną z~nich
+mimo elegancji, tworzy kilka technicznych przeszkód --- główną z~nich
 jest problem przeplatania ze~sobą leniwych akcji wejścia-wyjścia oraz ich~szeregowania;
 ten~problem dogłębnie opisuje~\cite{Thomasson:HHPP}. Unika~się stąd tego podejścia
 w~realnych zastosowaniach.
@@ -301,7 +343,7 @@ wydłuża się o~ewaluację danego thunka, co~może prowadzić do~wolniejszego d
 Pozostaje więc pytanie, w~jaki sposób zrealizować strumieniowanie danych
 w~monadach, które pozwalają na~gorliwe obliczenia.
 
-Jedną z~propozycji jest wykorzystanie współprograów.
+Jedną z~propozycji jest wykorzystanie współprogramów.
 
 Współprogramy (nazywane błędnie \emph{korutynami} jako kalka językowa)
 to~specjalny rodzaj podprogramów, które mają możliwość wstrzymania obliczeń
@@ -359,10 +401,10 @@ Następnie, takie definicje są~wpisywane w~miejscu wywołań i~wykonywana jest 
 \begin{minted}{haskell}
 foldr op z (build churchList) = unchurch churchList op z
 \end{minted}
-dzięki czemu zamiast budować pośredniej listy, budujemy wynik
+dzięki czemu zamiast budować pośrednią listę, budujemy wynik
 w~oparciu o~\texttt{op} oraz \texttt{z}.
 
-Co~więcej, przy serii przepisywaniu definicji funkcji, docelowa funkcja wyliczająca
+Co~więcej, przy serii przepisywania definicji funkcji, docelowa funkcja wyliczająca
 wartość na~podstawie tak~zwiniętego wyrażenia może ograniczać~się do~rekursywnej funkcji,
 która generuje wynik wprost. Więcej na~ten temat można przeczytać w~\cite{Gill:SCD}.
 
@@ -437,9 +479,9 @@ są soczewki. Ponieważ ich~użycie jest sporadyczne w~projekcie, nie~będą
 one~opisywane dokładniej w~rozważaniach. O soczewkach zbudowanych
 na~profunktorach można przeczytać w~\cite{Pickering_2017}.
 
-\section{Kodowanie, a~inne języki programowania}
+\chapter{Kodowanie, a~inne języki funkcyjne} % TODO
 
-W~tej~sekcji zostaną opisane problemy, które wystąpiły w~trakcie implementacji
+W~tym rozdziale zostaną opisane problemy, które wystąpiły w~trakcie implementacji
 kodowania w~innych językach funkcyjnych niż~Haskell. 
 
 \subsection{Scala}
