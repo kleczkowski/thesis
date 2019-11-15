@@ -87,7 +87,8 @@ aplikacji.
 \emph{Haskell Stack} używa narzędzia o~nazwie \emph{hpack}. 
 Jest to~generator plików narzędzia budowania~\emph{Cabal},
 który jest tyłem dla~\emph{Stacka}. Sporządzenie konfiguracji
-jest bardzo proste, a~sama~jej treść jest samoopisująca~się.
+jest bardzo proste, a~sama~jej treść jest samoopisująca~się. 
+Plik znajduje się jako listing~\ref{lst:package-yaml}.
 
 % TODO: Wstawić tutaj listing z konfiguracją package.yaml
 
@@ -146,15 +147,43 @@ benchmarks:
     - random-bytestring
   \end{minted}
   \caption{Przykładowy plik konfiguracyjny pakietu \texttt{ac-haskell}}
+  \label{lst:package-yaml}
 \end{listing}
 
 Tak~sporządzony plik może posłużyć do~inicjalizacji projektu.
 Należy uruchomić polecenie \texttt{stack init} w~folderze,
 w~którym znajduje~się konfiguracja.
 
+Po inicjalizacji Stack dobiera nam profil LTS (ang. \emph{long-term support})
+i inicjalizuje wewnętrzną strukturę projektu. 
+
+\subsection{Stack, a Cabal}
+
+Za podobne narzędzie uważa się również Haskell Cabal.
+
+Cabal jest systemem budowania dla Haskella, gdy Stack jest pewnego rodzaju nakładką,
+która rozwiązuje problem tzw. \emph{Cabal hell}.
+
+Problemem, który można doświadczyć, gdy projekt jest oparty wyłącznie o Cabala,
+jest podobny do \emph{DLL hell} i polega on na tym, że Cabal rozwiązując zależności
+przy niedbałym doborze wersji bibliotek, może nie spełnić pozostałych wymagań
+bibliotek. Przy wyborze zależności, nie można wybrać dwóch
+wersji tej samej biblioteki, co może skutkować niespełnieniem wymogów przez Cabala.
+
+Stąd powstała nakładka, która pozwala na pogrupowanie bibliotek w profile LTS,
+które gwarantują nam kompatybilność bibliotek ze sobą. To podejście skutecznie rozwiązuje
+problem \emph{Cabal hell}.
+
 \section{Dokumentacja projektu}
 
-Szczegółowa dokumentacja kodu jest generowana przez narzędzie \emph{haddock}.
+Szczegółowa dokumentacja kodu jest generowana przez narzędzie \texttt{haddock}.
+\texttt{Haddock} jest bogatym w funkcjonalności generatorem dokumentacji, 
+analogicznym do narzędzi takich jak \texttt{javadoc} albo \texttt{Doxygen}, dla Haskella. 
+Generator opiera się na bogatej składni
+do formatowania tekstu, pozwala grupować nazwy w tematyczne grupy oraz
+wprowadza makra do dokumentacji, dzięki którym można uniknąć powtarzalności podczas
+pisania dokumentacji.
+
 Aby wygenerować i~podejrzeć dokumentację projektu, należy uruchomić \texttt{stack haddock
 ac-haskell --open} w~folderze projektu. Po~zbudowaniu dokumentacji, pojawia~się
 okno z~modułami projektu. Pod~linkami znajdują~się poszczególne dokumentacje
@@ -211,6 +240,19 @@ efektywność rozwiązania.
 
 \subsection{Testy jednostkowe}
 
+Testy jednostkowe odpowiadają za sprawdzenie, czy aplikacja zachowuje
+się zgodnie ze specyfikacją. Sprawdzane jest, czy dekodowanie odwraca
+proces kodowania. Testy są w pełni zautomatyzowane, dzięki
+użytej biblioteki QuickCheck. Biblioteka pozwala na generowanie przypadków
+testowych wraz z kontrolą niepowodzeń w trakcie testów. Jeśli podczas testu
+nadarzy się błąd, środowisko testowe przycina przypadki do mniejszych, tak by
+znaleźć odpowiednio mały kontrprzykład do testowanych własności kodu. 
+Takie podejście pozwala na skuteczniejsze testowanie kodu bez interakcji w tworzenie
+przypadków testowych oraz skraca czas pisania testów~\cite{Claessen:QLT}.
+
+QuickCheck wspiera tzw. \emph{property-based testing}, skupiając się 
+na własnościach algebraicznych funkcji, które są testowane.
+
 By~uruchomić testy jednostkowe, należy wywołać~\texttt{stack test}
 w~folderze projektu. Narzędzie \emph{Stack} zbuduje projekt
 i~stowarzyszone z~nim testy. Ponadto zbuduje~kod
@@ -220,6 +262,11 @@ znalezione i~uruchomione. \texttt{hspec}
 generuje raport z~przeprowadzonych testów jednostkowych.
 
 \subsection{Testy obciążeniowe}
+
+Testy obciążeniowe pozwalają na pomiar czasu wykonywania implementacji projektu.
+Biblioteka \texttt{criterion} pozwala na osadzenie testów oraz generowanie
+odpowiedniego raportu wraz z danymi statystycznymi osadzonego w pliku tekstowym
+bądź pliku HTML.
 
 By~uruchomić testy obciążeniowe, należy uruchomić~\texttt{stack bench}
 w~folderze projektu. \emph{Stack} zbuduje projekt
