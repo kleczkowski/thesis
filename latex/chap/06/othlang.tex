@@ -1,0 +1,264 @@
+\documentclass[../praca.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Kodowanie, a inne funkcyjne języki programowania}
+
+Oprócz Haskella istnieją również inne funkcyjne języki programowania, które 
+różnią się filozofią oraz zarysem głównych konceptów w nich użytych.
+
+\section{Przegląd i podział języków funkcyjnych}
+
+Niewątpliwie, języki funkcyjne można dzielić względem:
+\begin{itemize}
+  \item implementowanych strategii ewaluacji wartości (ang. \emph{evaluation strategy});
+  \item tego, czy język jest czysty (ang. \emph{purely functional programming language});
+  \item użytego systemu typów i jego ekspresji;
+  \item kodu wynikowego i środowiska czasu wykonywania dla kompilowanego kodu. 
+\end{itemize}
+
+\subsection{Podział względem strategii ewaluacji}
+
+Strategią ewaluacji nazywamy sposób obliczenia wartości argumentów, w momencie gdy
+podajemy do funkcji jej argumenty. Wyróżnia się dwie najbardziej znaczące
+klasy strategii~\cite{Abelson:SICP}~\cite{Pierce:TPL}:
+
+\begin{itemize}
+  \item strategia gorliwa (ang. \emph{eager evaluation} lub \emph{strict evaluation}),
+    w której argumenty funkcji są obliczane obligatoryjnie 
+    przed jej uruchomieniem;
+  \item strategia leniwa (ang. \emph{lazy evaluation} lub \emph{non-strict evaluation}),
+    w której argumenty funkcji są obliczane fakultatywnie przed, lub w trakcie jej 
+    działania.
+\end{itemize}
+
+\subsubsection{Strategie gorliwe}
+
+Do strategii gorliwych należą m. in. strategie:
+\begin{itemize}
+  \item podawanie przez wartość (ang. \emph{call-by-value}), w którym podawane argumenty
+    są obliczane, kopiowane i związane przez zmienne lokalne reprezentujące
+    podane argumenty. Ta strategia jest najbardziej popularną strategią, wykorzystywaną
+    w językach ogólnego użytku tj. C++, Java, bądź Pascal. Języki funkcyjne, które 
+    implementują tę strategię to m.in. OCaml, Scala, Elixir, czy Rust.
+    Zaletą tej strategii jest jej prostota implementacji
+    w docelowym języku.
+  \item podawanie przez referencję (ang. \emph{call-by-reference}), w którym
+    argumenty są wskaźnikami do obliczonych argumentów. Rzadko zdarza się,
+    by języki kompletnie opierały się na tej strategii, jednakże wykorzystuje
+    się ją hybrydowo z \emph{call-by-value}, by uniknąć zbędnych kopii argumentów.
+    Jednym ze znanych języków funkcyjnych, które wykorzystują tę strategię jest
+    Rust i stanowi to wyjątek w świecie języków funkcyjnych.
+\end{itemize}
+
+\subsubsection{Strategie leniwe}
+
+Do strategii leniwych należą m. in. strategie:
+\begin{itemize}
+  \item podawanie przez nazwę (ang. \emph{call-by-name}), 
+    w którym argumenty nie są ewaluowane, lecz
+    są bezpośrednio podstawiane, bądź ich konstrukcja jest delegowana
+    do funkcji, które konstruują dane wartości (nazywane \emph{thunkiem}).
+    Zaletą tej strategii jest
+    fakultatywność ewaluacji argumentów. Jeśli dany argument
+    prowadzi do niepoprawnego, bądź potencjalnie nieskończonego, 
+    obliczenia, może on zostać zignorowany, przy
+    czym funkcja może obliczyć wynik bez użycia tego argumentu.
+    Jest to strategia implementowana m. in. przez język Scala, wykorzystując
+    nularne funkcje jako argumenty. 
+  \item podawanie w miarę potrzeby (ang. \emph{call-by-need}); jest to
+    wariant podawania przez nazwę wraz ze spamiętywaniem. Ta strategia jest
+    wykorzystywana w wypadku, kiedy język jest czystym językiem funkcyjnym
+    i stąd podczas konstrukcji wartości nie może dojść do ewentualnego skonstruowania
+    obiektu w zupełny inny sposób niż dotychczas. W częściowy sposób ta
+    strategia jest implementowana w języku Scala oraz w zupełności w języku
+    Haskelli, bądź Miranda.
+\end{itemize}
+
+\subsection{Podział względem czystości języka}
+
+Funkcję \( f \) nazywamy czystą, jeżeli spełnia następujące kryteria:~\cite{Milewski:PF}
+\begin{itemize}
+  \item \( f \) dla tych samych argumentów zwraca te same wartości
+    (postulat transparentności referencyjnej);
+  \item ewaluacja \( f \) nie prowadzi do żadnych efektów ubocznych.
+\end{itemize}
+
+Funkcje czyste stanowią analogiczną konstrukcje w świecie obliczeń, jaką stanowią
+funkcje matematyczne.
+
+\begin{remark}
+  Kiedy rozważamy wykorzystanie monad, nie należy mylić ewaluacji funkcji
+  dającej nam pewien obiekt monady z jej wykonaniem, ponieważ
+  obiekt monady jest konstruowany zgodnie z postulatem transparentności referencyjnej,
+  niekoniecznie wykonanie tego obiektu monady musi prowadzić do tych samych wyników.
+\end{remark}
+
+Języki czysto funkcyjne to takie języki, w których dowolna funkcja jest czysta. 
+Takimi językami są m. in. Haskell, Agda, czy Coq.
+
+\subsection{Podział względem użytego systemu typów}
+
+System typów to zbiór zasad, które nadają pewnym wartością pewną etykietę
+nazywaną typem. Typy pozwalają na sformalizowaną weryfikację poprawności
+programu względem rodzaju danych --- każdy typ definiuje jakiś szczególny
+rodzaj danych i jest utoższamiany ze zbiorem konstruowalnych wartości.~\cite{Pierce:TPL}
+
+Wyróżniamy następujące kryteria w podziale systemach typów:
+
+\begin{itemize}
+  \item Czy system typów wymaga specyfikowanie typu w czasie kompilacji,
+    lub w czasie wykonywania (statyczny vs. dynamiczny system typów)?
+  \item Czy system typów wymusza jawne określanie typów zmiennych
+    bądź funkcji, lub posiada system dedukcji typów, który pozwala
+    nadać typy bytom bez udziału programisty (typowanie jawne vs.
+    typowanie niejawne)?
+  \item Czy system typów dopuszcza do niejawnych konwersji, promocji
+    typów, lub kompletnie zabrania takich działań (typowanie słabe
+    vs. typowanie silne)?
+  \item Czy system typów pozwala na definiowanie typów zależnych
+    od innych typów, innymi słowy, typów polimorficznych (polimorficzny
+    system typów)?
+  \item Czy system typów pozwala na definiowanie typów zależnych
+    od wartości innych typów (zależne systemy typów)?
+\end{itemize}
+
+\subsubsection{Przykłady systemów typów}
+
+W tabeli~\ref{tab:type-systems} zestawiono kilka wybranych języków programowania.
+
+\begin{table}
+  \begin{tabular}{|l|l|l|l|l|l|}
+    \hline
+    Język        & Statyczny/dynamiczny?     & Silny/słaby?     & Typowanie (nie)jawne? & Polimorficzny?     & Zależny?   \\ \hline \hline
+    Haskell      & statyczny                 & silny            & niejawne              & tak                & częściowo tak  \\ \hline
+    OCaml        & statyczny                 & silny            & niejawne              & tak                & nie            \\ \hline
+    Scala        & statyczny                 & silny            & niejawne              & tak                & nie            \\ \hline
+    Elixir       & dynamiczny                & silny            & n.d.                  & n.d.               & nie            \\ \hline
+    Clojure      & dynamiczny                & silny            & n.d.                  & n.d.               & nie            \\ \hline
+    Agda         & statyczny                 & silny            & niejawne              & tak                & tak            \\ \hline
+    Coq          & statyczny                 & silny            & niejawne              & tak                & tak            \\ \hline
+  \end{tabular}
+  \caption{Przegląd  cech systemów typów w wybranych językach programowania}
+  \label{tab:type-systems}
+\end{table}
+
+\begin{remark}
+  Haskell jest częściowo zależnym systemem typów, ponieważ pozwala na parametryzację typów za pomocą
+  ograniczonej rodziny typów --- używa się wtedy dyrektywy \texttt{DataKinds}.
+\end{remark}
+
+\section{Wybór języków programowania}
+
+Przy próbie napisania projektów w oparciu o inne języki programowania wybrano
+następujące języki programowania: Scala oraz Elixir. 
+
+\subsection{Scala}
+
+Scala jest językiem wieloparadygmatowym, opracowanym przez 
+Martina Oderskiego~\cite{Odersky:BHS}. Scala łączy programowanie
+obiektowe z programowaniem funkcyjnym. Jest również językiem,
+w którym przeważającą strategią ewaluacji jest~\emph{call-by-value},
+ale również implementuje w pełni~\emph{call-by-name} oraz częściowo
+\emph{call-by-need}. Scalę również wyróżnia statyczny, silny i polimorficzny system typów,
+który umożliwia parametryzowanie typów za pomocą typów wyższego rodzaju
+(ang. \emph{higher-kinded types}) oraz pozwala na implementację
+wzorca klas typów (ang. \emph{type-class pattern}) za pomocą
+argumentów niejawnych (ang. \emph{implicit arguments}). Ponadto
+system typów pozwala na niejawne typowanie. Użyty system typów
+jest wariantem Systemu-\(\mathcal{F}_{:>}\).
+
+\subsection{Elixir}
+
+Elixir jest językiem, który łączy cechy programowania funkcyjnego
+oraz programowania współbieżnego, stworzonym przez Jos{\' e} Valima
+w 2012 roku. Elixir jest uruchamiany na maszynie wirtualnej Erlanga,
+która daje możliwość tworzenia wielu procesów bardzo małym 
+kosztem~\cite{Juric:EiA}.
+
+Elixir posiada dynamiczny i silny system typów, przez co system typów
+nie ma potrzeby implementacji typów polimorficznych.
+
+Dalsze sekcje będą poświęcone krytyce tych języków wobec problemu implementacji
+kodowania arytmetycznego w tych językach.
+
+\section{Krytyka wybranych języków funkcyjnych}
+
+\subsection{Kwestia czystości języków}
+
+Scala, jak i Elixir, nie są czystymi językami funkcyjnymi, ponieważ
+same pozwalają na dokonywanie pewnych efektów ubocznych. W Scali
+można jawnie wywoływać polecenia, jak i definiować mutowalne zmienne
+(za pomocą \mintinline{scala}{var}). W Elixirze można w jawny sposób
+korzystać z wejścia/wyjścia, czy też wysyłać wiadomości do aktorów.
+
+Brak tego obostrzenia prowadzi do osłabienia znaczenia monad, ponieważ
+można modelować efekty uboczne wprost, bez ich użycia. Stąd Scala i Elixir
+potrzebują innego modelu mutowalności oraz obliczeń, w przeciwieństwie
+do przedstawionego w poprzednim rozdziale. Co więcej, sposób
+w jakim można osiągać efekty uboczne nie wiele różni się
+od tego, jak osiągane są efekty uboczne w językach imperatywnych.
+
+Stąd dalej będą rozważane próby i ograniczenia języków w związku 
+z wprowadzaniem rozwiązań pozwalające na osiągnięcie implementacji
+zgodnej z filozofią programowania funkcyjnego.
+
+\subsection{Scala a mutowalny stan}
+
+Zgodnie z poprzednią obserwacją, wykorzystanie zaimplementowanej 
+monady stanu w takim kształcie,
+w jakim występuje w Haskellu, może przynieść podobne problemy wydajnościowe,
+które były rozważane w poprzednim rozdziale, stąd powstaje pytanie, w jaki sposób
+osiągnąć bezpośrednią mutowalność w sposób monadyczny.
+
+Pomysłem możliwym do implementacji byłoby użycie monady \texttt{Reader}, która
+dawałaby możliwość podejrzenia struktury, która składa się z mutowalnych zmiennych.
+To podejście jest równoważne (w sensie działania monady) do przedstawionego poniżej.
+
+\subsection{Ograniczenia techniczne Scali}
+
+Do osiągnięcia mutowalnego stanu można było wykorzystać domknięcia, 
+które składa się z mutowalnych
+zmiennych. Funkcje leżące w domknięciu działają na mutowalnych zmiennych,
+przez co można było zasymulować działanie stosu monad \mintinline{haskell}{ReaderT Refs IO},
+gdzie \texttt{Refs} jest strukturą, która zawiera referencje do mutowalnych zmiennych.
+
+To spotkało się z ograniczeniem nałożonym na wirtualną maszynę Javy. Według 
+dokumentacji~\cite{Oracle:IC} zmienne w klasach anonimowych, bądź zagnieżdżonych, 
+a stąd w domknięciach, które są modelowane jako klasy anonimowe w Scali, muszą zostać
+nienaruszone przez funkcje operujące na tym domknięciu. 
+Ze względu na to obostrzenie Scala tworzy kopię domknięcia, 
+przez co mutowanie jest niemożliwe. 
+
+To ograniczenie poprowadziło do fiaska
+tego projektu, ponieważ jedyna skuteczna implementacja 
+sprowadzała się do implementacji 
+w sposób imperatywny.
+
+\subsection{Elixir i niewłaściwy dobór paradygmatów}
+
+Elixir jest językiem, którym celem jest ułatwienie pisania programów współbieżnie.
+Oczywiście, współbieżność jest szczególnie wrażliwa na mutowalność, ponieważ jej
+wprowadzenie generuje dodatkowy problem nadzorowania mutowalności poprzez muteksy,
+bądź semafory. Elixir kładzie nacisk na model współbieżności, w którym mutowalność
+jest kompletnie pominięta, stąd też wykorzystuje się model aktorów, który posługuje
+się niemutowalnymi wiadomościami, które są wysyłane do aktorów.
+
+\subsection{Dynamiczny system typów Elixira}
+
+Przez to, że Elixir ma dynamiczny system typów, propozycja implementacji rozważana 
+w drugim rozdziale jest nieadekwatna do systemu typów. Stąd należało porzucić
+monady i skupiono się na implementacji kodowania za pomocą domknięć i mutowalnych 
+zmiennych, w sposób nieznacznie odbiegający od programowania imperatywnego.
+
+\subsection{Elixir i pozorna mutowalność zmiennych}
+
+W przeciwieństwie do Erlanga, Elixir pozwala na redefinicję zmiennej, która de facto
+jest etykietą. Wykonanie przypisania \texttt{x = 2} a następnie \texttt{x = 3}
+usuwa z kontekstu przypisanie \texttt{x = 2}, by wprowadzić na nowo etykietę 
+z wartością \texttt{x = 3}. Takie podejście nie pozwala na wykonanie 
+domknięcia z mutowalnymi zmiennymi, co więcej, w żaden sposób nie pozwala
+zamodelować mutowalnego stanu, który jest potrzebny w kodowaniu arytmetycznym, stąd
+ten projekt również zakończył się niepowodzeniem.
+
+\end{document}

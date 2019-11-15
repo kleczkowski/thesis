@@ -180,6 +180,29 @@ za~pomocą polecenia~\texttt{ac-haskell --help}.
 Aplikacja generuje odpowiednią pomoc dot.~poleceń. By~uzykać pomoc na~temat konkretnych
 poleceń, wystarczy wywołać \texttt{ac-haskell <polecenie>}.
 
+\begin{listing}
+  \begin{minted}{console}
+$ ac-haskell --help
+ac-haskell --- arithmetic codec written in Haskell
+
+Usage: ac-haskell COMMAND
+  Compress data with the arithmetic codec
+
+Available options:
+  -h,--help                Show this help text
+
+Available commands:
+  encode                   Run arithmetic enoder
+  decode                   Run arithmetic decoder
+$ ac-haskell decode
+Missing: (INPUT_FILE | --stdin) (OUTPUT_FILE | --stdout)
+
+Usage: ac-haskell decode (INPUT_FILE | --stdin) (OUTPUT_FILE | --stdout)
+  Run arithmetic decoder
+  \end{minted}
+  \caption{Przykładowe użycie pomocy programu \texttt{ac-haskell}}
+\end{listing}
+
 \section{Testy projektu}
 
 Projekt zawiera dwa~rodzaje testów: testy jednostkowe, sprawdzające
