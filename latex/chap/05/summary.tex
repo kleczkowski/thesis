@@ -70,12 +70,12 @@ nie jest przystosowana do takich zastosowań jak strumieniujące algorytmy
 kompresji.
 
 Oczywiście, możnaby zaimplementować bibliotekę \texttt{pipes}
-stosując kodowanie Churcha struktury danych za nią stojących.
-To mogłoby sprowadzić użycie obiektu strumienia w taki sposób, w którym
-operuje się na złożeniach funkcji, a przez to takie rozwiązanie może sprzyjać
-fuzji strumieni.
-Też wartym zastanowienia się jest implementacja fuzji i oddrzewiania
-dla biblioteki do strumieniowania, by móc zaimplementować bardziej
-zaawansowane optymalizacje, czy też udostępniać inne już zaimplementowane.
+stosując kodowanie Churcha. Transformator monad \texttt{Pipe} 
+zostałby zakodowany w podobny sposób, jak zaprezentowano
+fuzję \emph{foldr/build}. 
 
+To podejście pozwoli na przetwarzanie potoków za pomocą złożeń funkcji,
+przez, co stwarzałoby możliwości na działanie innych optymalizacji związanych
+z fuzją strumieni.
 \end{document}
+
