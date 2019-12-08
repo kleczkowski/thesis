@@ -107,7 +107,7 @@ Rozwiązanie zakłada użycie dowolnej arytmetyki o~skończonej precyzji, przez
 co~zyskujemy na~szybkości. Co~więcej, można wybrać w~szczególności arytmetykę stałoprzecinkową zrealizowaną 
 na~liczbach całkowitych. 
 
-Po~zwężeniu przedziału, ten~przedział jest poddawany
+Po~zwężeniu przedziału, jest on poddawany
 szeregowi przekształceń, które go poszerzają, emitując przy~tym kolejne bity
 rozwinięcia binarnego znacznika~\( M \), który budowany jest przyrostowo.
 To~rozwiązanie pozwala na~osiągnięcie algorytmu, który ma~własność strumieniowania
@@ -128,12 +128,13 @@ spada w stosunku do~zakodowania go modelem znanym uprzednio.
 
 Jeśli wejście jest nieznane, bądź nie~możemy oszacować, jaki
 będzie rozkład prawdopodobieństwa dla~symboli, modele statyczne
-mogą być niewystarczające dla takich danych, skutkując tym~nieefektywną kompresją.
-Z~drugiej strony, wygodnym podejściem jest nieanalizowanie wejścia uprzednio, ponieważ
+mogą być niewystarczające dla takich danych, skutkując nieefektywną kompresją.
+Z~drugiej strony, wygodnym podejściem jest nieanalizowanie wejścia 
+przed kodowaniem, ponieważ
 algorytm traci własności strumieniujące.
 
 Stąd, rozwiązaniem pośrednim jest model dynamiczny, który odzwierciedla 
-statystykę danych uprzednio zakodowanych. Model dynamiczny to~taki~model,
+statystykę danych już wcześniej zakodowanych. Model dynamiczny to~taki~model,
 który można modyfikować w~trakcie działania algorytmu, aktualizując~go
 o~nowe wystąpienia symboli. 
 
@@ -160,10 +161,14 @@ Ta struktura gwarantuje w~czasie~\( O (\log n) \) zapytanie i~modyfikację
 częstotliwości występowania symboli, ponadto realizuje skalowanie w~\( O (n \log n) \).
 
 Próg skalowania ustala się według ograniczeń przybranej arytmetyki. 
+Niezmiennikiem w algorytmie skalowania jest to, że rozpiętość
+przedziału musi być nie mniejsza niż \( \frac{1}{4} \), stąd
+trzeba również skalować częstotliwości zapisane w modelu statystycznym.
 W~wypadku arytmetyki stałopozycyjnej o~formacie, gdzie 16 bitów jest przeznaczona 
 na część ułamkową, należy skalować
-model co~16363 symboli~\cite{Fenwick:FT}.
-Jego implementacja i~opis znajduje~się w~\cite{Fenwick:FT}.
+model co~16363 symboli~\cite{Fenwick:FT}, by liczba była na tyle mała, żeby
+kodowany przedział był nie krótszy niż \( \frac{1}{4} \).
+Implementacja i~opis drzewa znajduje~się w~\cite{Fenwick:FT}.
 
 \section{Realizacja mutowalnego stanu w językach funkcyjnych}
 
@@ -229,14 +234,14 @@ ponadto te~referencje nie~mogą zostać wyjawione poza~kontekst monady. To ogran
 jest zrealizowane techniką nazywaną~\emph{typem rzekomym} albo~\emph{typem fantomowym}
 (ang.~\emph{phantom type}). Jest to parametr typowy, który nie uczestniczy w żadnym 
 konstruktorze danych, jedynie w konstruktorze typu. Ogólna kwantyfikacja tego typu
-w funkcji pozwalającej opuścić kontekst monadyczny:
+w funkcji pozwalającej opuścić kontekst monadyczny
 \begin{minted}{haskell}
 runST :: (forall s. ST s a) -> a
 \end{minted}
 wymusza nieukonkretnianie parametru typowego. Ten parametr jest uwspólniony z~typami
 referencji, czy~struktur danych, które żyją w~tej monadzie (przykładowo \mintinline{haskell}{STRef s a}
-jest rzeczoną referencją, która zachowuje~się jak~mutowalna zmienna).
-Usiłowany wyciek referencji poza kontekst monady musiałby~się wiązać z~ukonkretnieniem parametru
+jest referencją, która zachowuje~się jak~mutowalna zmienna).
+Wyciek referencji poza kontekst monady musiałby~się wiązać z~ukonkretnieniem parametru
 \texttt{s}, przez co~referencje mogą~żyć tylko w~omawianej monadzie.
 
 Najważniejszą zaletą tej~monady jest wykorzystanie mutowalności wprost, stąd zostaje rozwiązany
@@ -316,22 +321,23 @@ zaletą i~cennym narzędziem do~realizacji strumieniowania.
 
 \subsection{Leniwe wejście-wyjście}
 
-Jednakże użycie leniwego wartościowania w kontekście leniwego wejścia-wyjścia,
-mimo elegancji, tworzy kilka technicznych przeszkód --- główną z~nich
-jest problem przeplatania ze~sobą leniwych akcji wejścia-wyjścia oraz ich~szeregowania;
-ten~problem dogłębnie opisuje~\cite{Thomasson:HHPP}. Unika~się stąd tego podejścia
+Użycie leniwego wartościowania w kontekście leniwego wejścia-wyjścia,
+mimo elegancji, tworzy jednakże kilka technicznych przeszkód --- główną z~nich
+jest problem przeplatania ze~sobą leniwych akcji wejścia-wyjścia oraz ich~szeregowania
+(ten~problem dogłębnie opisuje~\cite{Thomasson:HHPP}). Unika~się stąd tego podejścia
 w~realnych zastosowaniach.
 
 \subsection{Leniwe monady stanu}
 
-Ponadto, monady, które przeprowadzają operację \emph{bind} w~sposób leniwy,
-w~szczególności leniwy~\texttt{State} i~\texttt{ST} są powolne ze~względu
+Monady, które przeprowadzają operację \emph{bind} w~sposób leniwy,
+w~szczególności leniwy~\texttt{State} i~\texttt{ST}, są powolne ze~względu
 na intensywne korzystanie z mechanizmu, który implementuje leniwe wartościowanie.
 
 Thunk jest podprogramem, który pozwala nam na skonstruowanie danej wartości,
 jeśli nie była uprzednio konstruowana, oraz jej przechowywanie, by nie
 liczyć wartości na~nowo (jest to~jedna z~ważnych cech, którą odróżnia \emph{call-by-need}
-od~\emph{call-by-name}). Ich kumulowanie ze~sobą może prowadzić do~dość długiego,
+od~\emph{call-by-name} opisane w rozdziale 3). 
+Ich kumulowanie ze~sobą może prowadzić do~dość długiego,
 i~przez to~kosztownego, stosu wywołań. 
 
 Podobne problemy mogą dziać się po stronie leniwych monad. Każdy \emph{bind}
@@ -350,14 +356,15 @@ to~specjalny rodzaj podprogramów, które mają możliwość wstrzymania oblicze
 i~wznowienia~ich w~dowolnym momencie. Dzięki temu współprogramy można ze~sobą
 przeplatać.
 
-W Haskellu przykładowa implementacja monadycznych korutyn jest opisana 
+W Haskellu przykładowa implementacja monadycznych współprogramów jest opisana 
 przez~\cite{Blazevic:CP}.
 
 Szczególną impleementacją przedstawionego mechanizmu są potoki~\cite{Blazevic:CP},
 które~\cite{Thomasson:HHPP} wymienia jako jedno z mechanizmów, które mogą realizować
 strumieniowanie danych.
 
-Potoki to~transformatory monad (w~ogólności monadyczne korutyny to~transformatory monad)
+Potoki to~transformatory monad (w~ogólności monadyczne współprogramy 
+to~transformatory monad)
 realizujące głównie dwa~rodzaje wstrzymania obliczeń:
 \begin{itemize}
   \item \texttt{await} --- wstrzymuje obliczenia, by otrzymać wartość ze środowiska;
@@ -367,12 +374,11 @@ Ponadto potoki można ze sobą łączyć~\cite{Blazevic:CP}, tak~jak to~wygląda
 w~powłokach tekstowych (np. bash, PowerShell, czy~cmd). To~daje możliwość
 modularyzacji kodu na~krótkie i~proste fragmenty kodu, które po~połączeniu dają
 nam w~pełni dojrzały algorytm, który~ma własność strumieniowania.
-
-Biblioteką, która udostępnia nam potoki, jest biblioteka \texttt{pipes}~\cite{Hackage:Pipes}.
+Biblioteką, która udostępnia nam potoki, 
+jest biblioteka \texttt{pipes}~\cite{Hackage:Pipes}.
 
 Wartym zaznaczenia faktem jest~to, że~ta~biblioteka zapewnia optymalizacje,
 tzw.~\emph{short-cut fusion}. 
-
 Jest to~technika, która unika alokacji obiektów pośrednich poprzez rozmaite
 przekształcenia algebraiczne i~prawa, które są~użyte w~trakcie kompilacji,
 jako seria reguł przepisywania drzewa syntaktycznego. Jest to~szczególna
@@ -444,7 +450,7 @@ data Free f a
 \end{minted}
 gdzie \texttt{f} jest nazywany funktorem zawieszenia.
 
-Monady wolne stanowią uogólnienie monadycznych korutyn. Ściślej mówiąc,
+Monady wolne stanowią uogólnienie monadycznych współprogramów. Ściślej mówiąc,
 transformator \mintinline{haskell}{Pipe i o m a} zachowuje izomorfizm:
 
 \begin{minted}{haskell}
@@ -467,10 +473,8 @@ otrzymując przy~tym producentów, którzy wysyłają konkretne grupy elementów
 Przykładowo funkcja \mintinline{haskell}{Pipes.Group.chunksOf} zamienia producenta~na wolną monadę
 z~zawieszonymi producentami, którzy produkują co~najwyżej~\( n \) elementów
 wyjściowych.
-
 Również biblioteka \emph{pipes-group} pozwala na~zwijanie producentów
 pochodzących z~monady wolnej (np.~\texttt{Pipes.Group.folds}).
-
 Więcej informacji na~temat tej~biblioteki można znaleźć na~załączonym
 do~niej tutorialu~\cite{Hackage:Pipes-Groups-Tut}.
 

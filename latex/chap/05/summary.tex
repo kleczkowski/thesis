@@ -12,8 +12,6 @@ mechanizmów użytych do realizacji strumieniowania --- między innymi
 wolne monady, czy też czasochłonne dereferowanie obiektów pozostających
 jako mutowalne. 
 
-\section{Dalsze rozważania}
-
 Oczywiście, jest to powód do dalszych rozważań na temat przyspieszenia
 tego kodu, zachowując odpowiedni poziom ekspresji kodu, jaki został
 osiągnięty do tej pory. Haskell posiada wiele narzędzi, które mogą
@@ -22,7 +20,7 @@ pozwalają je zaimplementować.
 
 Stąd rozważa się dalsze ulepszenia tej pracy, patrząc na słabe punkty tego kodera.
 
-\subsection{Implementacja projektu za pomocą FFI}
+\section{Implementacja projektu za pomocą FFI}
 
 Najbardziej trywialnym i pragmatycznym podejściem do problemu jest
 implementacja kodera i dekodera w języku C oraz eksportowanie funkcji
@@ -40,7 +38,7 @@ Ponadto napisanie monadycznego kodu musiałoby się wiązać
 z napisaniem przodu obcego kodu, co sprawia, że projekt
 rośnie w zbędny kod (ang. \emph{boilerplate}).
 
-\subsection{Inspekcja funkcji operujących na modelu statystycznym}
+\section{Inspekcja funkcji operujących na modelu statystycznym}
 
 Podczas profilowania testów obciążeniowych dla projektu napisanego w Haskellu
 można zauważyć, że jednym z najbardziej drogim centrum kosztu jest
@@ -62,7 +60,7 @@ Ten problem może się wiązać z następującymi powodami:
     nie dałoby wymiernych efektów.
 \end{itemize}
 
-\subsection{Wariant biblioteki \texttt{pipes} w stylu CPS}
+\section{Wariant biblioteki \texttt{pipes} w stylu CPS}
 
 Natomiast spoglądając na najdroższe (prócz funkcji \texttt{main}) centrum kosztu,
 funkcję \texttt{lift} możemy przypuszczać co do tego, że biblioteka strumieniująca

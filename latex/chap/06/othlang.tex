@@ -2,7 +2,7 @@
 
 \begin{document}
 
-\chapter{Kodowanie, a inne funkcyjne języki programowania}
+\chapter{Haskell, a inne funkcyjne języki programowania}
 
 Oprócz Haskella istnieją również inne funkcyjne języki programowania, które 
 różnią się filozofią oraz zarysem głównych konceptów w nich użytych.
@@ -77,14 +77,14 @@ Do strategii leniwych należą m. in. strategie:
 
 \subsection{Podział względem czystości języka}
 
-Funkcję \( f \) nazywamy czystą, jeżeli spełnia następujące kryteria:~\cite{Milewski:PF}
+Funkcję \( f \) nazywamy czystą, jeżeli spełnia następujące kryteria~\cite{Milewski:PF}:
 \begin{itemize}
   \item \( f \) dla tych samych argumentów zwraca te same wartości
     (postulat transparentności referencyjnej);
   \item ewaluacja \( f \) nie prowadzi do żadnych efektów ubocznych.
 \end{itemize}
 
-Funkcje czyste stanowią analogiczną konstrukcje w świecie obliczeń, jaką stanowią
+Funkcje czyste stanowią analogiczną konstrukcję w świecie obliczeń, jaką stanowią
 funkcje matematyczne.
 
 \begin{remark}
@@ -123,14 +123,14 @@ Wyróżniamy następujące kryteria dla systemów typów:
     od wartości innych typów (zależne systemy typów)?
 \end{itemize}
 
-\subsubsection{Przykłady systemów typów}
-
-W tabeli~\ref{tab:type-systems} zestawiono kilka wybranych języków programowania.
+W tabeli~\ref{tab:type-systems} zestawiono kilka wybranych języków programowania wraz
+z~cechami systemów typów.
 
 \begin{table}
+  \centering
   \begin{tabular}{|l|l|l|l|l|l|}
     \hline
-    Język        & Statyczny/dynamiczny?     & Silny/słaby?     & Typowanie (nie)jawne? & Polimorficzny?     & Zależny?   \\ \hline \hline
+    Język        & \specialcell{\noident Statyczny \\ /dynamiczny?}     & Silny/słaby?     & Typowanie (nie)jawne? & Polimorficzny?     & Zależny?   \\ \hline \hline
     Haskell      & statyczny                 & silny            & niejawne              & tak                & częściowo tak  \\ \hline
     OCaml        & statyczny                 & silny            & niejawne              & tak                & nie            \\ \hline
     Scala        & statyczny                 & silny            & niejawne              & tak                & nie            \\ \hline
@@ -150,8 +150,8 @@ W tabeli~\ref{tab:type-systems} zestawiono kilka wybranych języków programowan
 
 \section{Wybór języków programowania}
 
-Przy próbie napisania projektów w oparciu o inne języki programowania wybrano
-następujące języki programowania: Scala oraz Elixir. 
+Przy próbie napisania projektu w oparciu o inne języki programowania wybrano 
+Scalę oraz Elixir. 
 
 \subsection{Scala}
 
@@ -195,7 +195,7 @@ korzystać z wejścia/wyjścia, czy też wysyłać wiadomości do aktorów.
 Brak tego obostrzenia prowadzi do osłabienia znaczenia monad, ponieważ
 można modelować efekty uboczne wprost, bez ich użycia. Stąd Scala i Elixir
 potrzebują innego modelu mutowalności oraz obliczeń, w przeciwieństwie
-do przedstawionego w poprzednim rozdziale. Co więcej, sposób
+do przedstawionego w rozdziale 2. Co więcej, sposób
 w jakim można osiągać efekty uboczne nie wiele różni się
 od tego, jak osiągane są efekty uboczne w językach imperatywnych.
 
@@ -231,7 +231,7 @@ Ze względu na to obostrzenie Scala tworzy kopię domknięcia,
 przez co mutowanie jest niemożliwe. 
 
 To ograniczenie poprowadziło do fiaska
-tego projektu, ponieważ jedyna skuteczna implementacja 
+projektu w języku Scala, ponieważ jedyna skuteczna implementacja 
 sprowadzała się do implementacji 
 w sposób imperatywny.
 
@@ -259,6 +259,6 @@ usuwa z kontekstu przypisanie \texttt{x = 2}, by wprowadzić na nowo etykietę
 z wartością \texttt{x = 3}. Takie podejście nie pozwala na wykonanie 
 domknięcia z mutowalnymi zmiennymi, co więcej, w żaden sposób nie pozwala
 zamodelować mutowalnego stanu, który jest potrzebny w kodowaniu arytmetycznym, stąd
-ten projekt również zakończył się niepowodzeniem.
+projekt w tym języku również zakończył się niepowodzeniem.
 
 \end{document}

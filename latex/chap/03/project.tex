@@ -7,29 +7,25 @@
 \section{Struktura projektu}
 
 Projekt jest oparty o~system budowania \emph{Haskell Stack}.
-Opis folderów znajdujących się w~projekcie znajduje się w~tabeli~\ref{tab:directories}.
-Opis modułów wchodzących w~skład projektu są~w~tabeli~\ref{tab:modules}.
+Opis folderów znajdujących się w~projekcie oraz podział
+na moduły znajduje się w~tabeli~\ref{tab:modules}.
 Biblioteki i~motywacja ich~użycia są~podane w~tabeli~\ref{tab:libs}.
 W~dolnej podtabeli zostały podane biblioteki użyte do~testowania
 aplikacji.
 
-\begin{table}
+Całość kodu jest zamieszczona na dołączonej płycie CD.
+\begin{table}[h]
   \centering
-  \begin{tabular}{|l|p{8cm}|}
+  \subfloat[Struktura katalogowa]{\begin{tabular}{|l|p{6cm}|}
     \hline
     Nazwa & Opis \\ \hline
     \texttt{app}                & Zawiera kod odpowiadający za~interfejs tekstowy kodera. \\ \hline
     \texttt{bench}              & Zawiera kod testów obciążeniowych. \\ \hline
     \texttt{test}               & Zawiera kod testów jednostkowych. \\ \hline
     \texttt{src}                & Zawiera główny kod projektu. \\ \hline 
-  \end{tabular}
-  \caption{Struktura katalogowa projektu \texttt{ac-haskell}}
-  \label{tab:directories}
-\end{table}
-
-\begin{table}
-  \centering
-  \begin{tabular}{|l|p{8cm}|}
+  \end{tabular}}
+  \quad
+  \subfloat[Moduły projektu]{\begin{tabular}{|l|p{6cm}|}
     \hline 
     Nazwa & Opis \\ \hline
     \texttt{Codec.AC.Internal}  & Zawiera wewnętrzny kod kodeka, który reeksportuje
@@ -40,12 +36,12 @@ aplikacji.
     \texttt{Codec.AC.Encoder}   & Jak wyżej, tylko~że koder. \\ \hline
     \texttt{Codec.AC.FreqTree}  & Zawiera implementację drzewa Fenwicka w~oparciu 
                                   o~mutowalne tablice. \\ \hline
-  \end{tabular}
-  \caption{Moduły projektu \texttt{ac-haskell}}
+  \end{tabular}}
+  \caption{Struktura katalogowa projektu \texttt{ac-haskell}} i moduły projektu \texttt{ac-haskell}
   \label{tab:modules}
 \end{table}
 
-\begin{table}
+\begin{table}[p]
   \centering
   \begin{tabular}{|l|p{8cm}|}
     \hline
@@ -157,7 +153,7 @@ w~którym znajduje~się konfiguracja.
 Po inicjalizacji Stack dobiera nam profil LTS (ang. \emph{long-term support})
 i inicjalizuje wewnętrzną strukturę projektu. 
 
-\subsection{Stack, a Cabal}
+\subsection{Stack a Cabal}
 
 Za podobne narzędzie uważa się również Haskell Cabal.
 
@@ -184,8 +180,8 @@ do formatowania tekstu, pozwala grupować nazwy w tematyczne grupy oraz
 wprowadza makra do dokumentacji, dzięki którym można uniknąć powtarzalności podczas
 pisania dokumentacji.
 
-Aby wygenerować i~podejrzeć dokumentację projektu, należy uruchomić \texttt{stack haddock
-ac-haskell --open} w~folderze projektu. Po~zbudowaniu dokumentacji, pojawia~się
+Aby wygenerować i~podejrzeć dokumentację projektu, należy uruchomić 
+\mint{console}|stack haddock ac-haskell --open| w~folderze projektu. Po~zbudowaniu dokumentacji, pojawia~się
 okno z~modułami projektu. Pod~linkami znajdują~się poszczególne dokumentacje
 modułów wraz z~wyeksportowanymi symbolami. Do~każdego wyeksportowanego
 symbolu pojawia się jego typ, instancje oraz donośnik do~kodu źródłowego,
@@ -242,8 +238,8 @@ efektywność rozwiązania.
 
 Testy jednostkowe odpowiadają za sprawdzenie, czy aplikacja zachowuje
 się zgodnie ze specyfikacją. Sprawdzane jest, czy dekodowanie odwraca
-proces kodowania. Testy są w pełni zautomatyzowane, dzięki
-użytej biblioteki QuickCheck. Biblioteka pozwala na generowanie przypadków
+proces kodowania. Testy zostały w pełni zautomatyzowane, dzięki
+użytej bibliotece QuickCheck. Biblioteka pozwala na generowanie przypadków
 testowych wraz z kontrolą niepowodzeń w trakcie testów. Jeśli podczas testu
 nadarzy się błąd, środowisko testowe przycina przypadki do mniejszych, tak by
 znaleźć odpowiednio mały kontrprzykład do testowanych własności kodu. 
@@ -265,7 +261,7 @@ generuje raport z~przeprowadzonych testów jednostkowych.
 
 Testy obciążeniowe pozwalają na pomiar czasu wykonywania implementacji projektu.
 Biblioteka \texttt{criterion} pozwala na osadzenie testów oraz generowanie
-odpowiedniego raportu wraz z danymi statystycznymi osadzonego w pliku tekstowym
+odpowiedniego raportu, wraz z danymi statystycznymi, osadzonego w pliku tekstowym,
 bądź pliku HTML.
 
 By~uruchomić testy obciążeniowe, należy uruchomić~\texttt{stack bench}
@@ -276,6 +272,6 @@ w~różnych scenariuszach, o~których będzie mowa
 w~następnym rozdziale. Również zostaną uruchomione
 testy i~zostanie wygenerowany tekstowy raport. 
 By~otrzymać wersję HTML raportu, należy wywołać
-\texttt{stack bench --benchmark-arguments '--output-file raport.html'}.
+\mint{console}|stack bench --benchmark-arguments '--output-file raport.html'|
 
 \end{document}

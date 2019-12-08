@@ -39,7 +39,7 @@ Wybrano następujące przypadki:
 \section{Wyniki testów obciążeniowych}
 
 Zgodnie z~powyższą metodologią otrzymano wyniki opisane 
-w~tabeli~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
+w~tabelach~\ref{tab:encode-time} oraz \ref{tab:decode-time}.
 
 \begin{table}[h]
   \centering
@@ -74,6 +74,50 @@ na rodzaj przekazywanych danych, co ma powiązanie z
 średnim czasem dostępu do tablicy, która przechowuje
 sumy prefiksowe częstotliwości symboli. Średni czas
 dekodera napisanego w Haskellu jest od około sześciu 
-do jedenastu razy gorsze od próby referencyjnej.
+do jedenastu razy gorszy od próby referencyjnej.
+
+\begin{table}[h]
+  \centering
+  \subfloat[Entropia]{
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      $ $ & Oryginał & Po kompresji (C++) & Po kompresji (Haskell) \\ \hline
+      \texttt{pan-tadeusz.txt} & 5,0818 & 7,9994 & 7,9994 \\ \hline
+      \texttt{random.1m} & 7,9998 & 7,9998 & 7,9998 \\ \hline
+      \texttt{zeros.1m} & 0,0000 & 0,0944 & 0,0707 \\ \hline
+    \end{tabular}
+  }
+  \quad
+  \subfloat[Rozmiar plików i stopień kompresji dla Haskella]{
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      $ $ & Oryginał (bajty) & Po kompresji (bajty) & Stopień kompresji \\ \hline
+      \texttt{pan-tadeusz.txt} & 493 451 & 313 759 & 1,5677 \\ \hline
+      \texttt{random.1m} & 1 048 576 & 1 049 720 & 0,9989  \\ \hline
+      \texttt{zeros.1m} & 1 048 576 & 4293 & 244,25 \\ \hline
+    \end{tabular}
+  }
+  \quad
+  \subfloat[Rozmiar plików i stopień kompresji dla C++]{
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      $ $ & Oryginał (bajty) & Po kompresji (bajty) & Stopień kompresji \\ \hline
+      \texttt{pan-tadeusz.txt} & 493 451 & 313 782 & 1,5726 \\ \hline
+      \texttt{random.1m} & 1 048 576 & 1 048 753 & 0,9998  \\ \hline
+      \texttt{zeros.1m} & 1 048 576 & 432 & 2427,2 \\ \hline
+    \end{tabular}
+  }
+  \caption{Wybrane wskaźniki kompresji}
+  \label{tab:quality-of-compress}
+\end{table}
+
+Tabele~\ref{tab:quality-of-compress} potwierdzają, iż napisany projekt działa poprawnie.
+Obserwujemy podobny stopień kompresji oraz entropię zakodowanego pliku w obu projektach.
+Jedyną różnicą jest stopień kompresji dla przypadku testowego \texttt{zeros.1m}.
+
+Wyniki różnią się o jeden rząd, ponieważ implementacja w C++ nie aktualizuje
+ciągle modelu statystycznego --- jest on aktualizowany co 16 kilobajtów. 
+Implementacja w Haskellu zakłada ciągłą aktualizację modelu, przez co
+otrzymujemy dodatkowe bity na wyjściu.
 
 \end{document}

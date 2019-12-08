@@ -10,11 +10,13 @@
 \documentclass{book}
 \usepackage{biblatex}
 \usepackage[outputdir=build]{minted}
+\usepackage{subfig}
 
 \bibliography{chap/02/analysis.bib}
 \bibliography{chap/03/project.bib}
 \bibliography{chap/06/othlang.bib}
-
+\newcommand{\specialcell}[2][c]{%
+    \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
 % ***************************************************************************************************
 % Ustawienia języka
 % ***************************************************************************************************
