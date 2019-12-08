@@ -1,0 +1,3 @@
+[submodule "tests/Reference-arithmetic-coding"]
+	path = tests/Reference-arithmetic-coding
+	url = https://github.com/nayuki/Reference-arithmetic-coding
